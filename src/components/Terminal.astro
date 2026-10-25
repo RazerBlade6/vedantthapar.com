@@ -7,11 +7,54 @@ interface Props {
 }
 const { file } = Astro.props;
 const vfs = await buildVfs();
-const chips = ['help', 'ls projects', 'open apex', 'contact', 'theme', ...(site.resume ? ['resume'] : [])];
+const chips = ['help', 'ls projects', 'open apex', 'contact', 'theme', 'term', ...(site.resume ? ['resume'] : [])];
 ---
 
 <!-- Status line + command line. Persisted across page navigations so history and output survive. -->
-<div id="terminal" transition:persist class="sticky bottom-0 z-40 font-mono text-xs">
+<div id="terminal" transition:persist class="group sticky bottom-0 z-40 font-mono text-xs">
+  <!-- Full-buffer mode (`term`): covers the page above the status line -->
+  <section
+    data-buffer
+    hidden
+    aria-label="Full-screen terminal. Type exit, or press Escape twice, to leave."
+    class="fixed inset-x-0 top-0 bottom-11 flex flex-col bg-bg text-sm text-fg"
+  >
+    <div class="flex items-center justify-between border-b border-border bg-bg-alt pl-4 text-xs text-fg-muted">
+      <span class="truncate">vedantthapar.com — term</span>
+      <button
+        type="button"
+        data-buf-close
+        class="flex min-h-9 cursor-pointer items-center gap-2 px-3 hover:text-fg-strong"
+        aria-label="Leave full-screen terminal"
+      >
+        <span aria-hidden="true">exit</span><span aria-hidden="true">✕</span>
+      </button>
+    </div>
+    <div data-buf-scroll class="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-4 leading-6 sm:px-4">
+      <div data-buf-output aria-live="polite" class="shrink-0 break-words whitespace-pre-wrap"></div>
+      <form data-buf-form class="grid shrink-0 grid-cols-[3ch_minmax(0,1fr)] gap-x-3">
+        <span data-buf-number aria-hidden="true" class="text-right text-fg-muted opacity-60 select-none">1</span>
+        <div class="flex min-w-0 items-center gap-2">
+          <label for="buf-input" data-buf-prompt class="shrink-0 text-accent">~ $</label>
+          <input
+            id="buf-input"
+            data-buf-input
+            type="text"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            enterkeyhint="go"
+            class="min-w-0 flex-1 bg-transparent text-base text-fg-strong caret-accent outline-none sm:text-sm"
+          />
+        </div>
+      </form>
+      <div aria-hidden="true" class="grid min-h-0 flex-1 auto-rows-[1.5rem] grid-cols-[3ch_minmax(0,1fr)] content-start gap-x-3 overflow-hidden text-border select-none">
+        {Array.from({ length: 80 }, () => <span class="text-right">~</span><span />)}
+      </div>
+    </div>
+  </section>
+
   <section
     data-panel
     hidden
@@ -52,10 +95,10 @@ const chips = ['help', 'ls projects', 'open apex', 'contact', 'theme', ...(site.
         class="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 text-left disabled:cursor-default"
       >
         <span data-file class="truncate">{file}</span>
-        <span data-hint hidden class="hidden truncate text-fg-muted sm:inline">
+        <span data-hint hidden class="hidden truncate text-fg-muted group-data-[in-buffer]:hidden! sm:inline">
           · press <kbd class="text-fg-strong">:</kbd> for commands, <kbd class="text-fg-strong">?</kbd> for help
         </span>
-        <span data-hint hidden class="truncate text-fg-muted sm:hidden">· tap for commands</span>
+        <span data-hint hidden class="truncate text-fg-muted group-data-[in-buffer]:hidden! sm:hidden">· tap for commands</span>
       </button>
       <form data-form hidden class="flex min-w-0 flex-1 items-center gap-1">
         <span data-prompt aria-hidden="true" class="text-fg-strong">:</span>

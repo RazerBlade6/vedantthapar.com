@@ -146,3 +146,65 @@ test('@mobile tapping the status line opens the chip sheet', async ({ page }) =>
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBe(0);
 });
+
+test.describe('full-buffer mode', () => {
+  const buf = (page: Page) => page.locator('[data-buffer]');
+  const bufOut = (page: Page) => page.locator('[data-buf-output]');
+  async function bufRun(page: Page, line: string) {
+    await page.locator('[data-buf-input]').fill(line);
+    await page.keyboard.press('Enter');
+  }
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('[data-theme-cycle]')).toBeVisible();
+    await command(page, 'term');
+    await expect(buf(page)).toBeVisible();
+  });
+
+  test('term opens the buffer with a splash and a focused prompt', async ({ page }) => {
+    await expect(page.locator('[data-mode]')).toHaveText('TERM');
+    await expect(bufOut(page)).toContainText('type help for commands');
+    await expect(page.locator('[data-buf-input]')).toBeFocused();
+    await expect(page.locator('[data-panel]')).toBeHidden();
+  });
+
+  test('cat prints files instead of navigating, cd stays put', async ({ page }) => {
+    await bufRun(page, 'cd projects');
+    await expect(page.locator('[data-buf-prompt]')).toHaveText('~/projects $');
+    await bufRun(page, 'cat apex');
+    await expect(bufOut(page)).toContainText('# Apex');
+    await expect(bufOut(page)).toContainText('## Key decisions');
+    await expect(bufOut(page).getByRole('link', { name: 'github.com/RazerBlade6/apex' })).toBeVisible();
+    expect(new URL(page.url()).pathname).toBe('/');
+  });
+
+  test('ls entries are clickable and cat themselves', async ({ page }) => {
+    await bufRun(page, 'ls');
+    await bufOut(page).getByRole('button', { name: 'experience.log' }).click();
+    await expect(bufOut(page)).toContainText('R&D Intern · 1Kosmos');
+  });
+
+  test('Esc twice leaves, and the scrollback is still there next time', async ({ page }) => {
+    await bufRun(page, 'pwd');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(buf(page)).toBeHidden();
+    await expect(page.locator('[data-mode]')).toHaveText('NORMAL');
+    await command(page, 'term');
+    await expect(bufOut(page)).toContainText('~ $ pwd');
+  });
+
+  test('open leaves the buffer and goes to the page; the buffer survives navigation', async ({ page }) => {
+    await bufRun(page, 'open r-lox');
+    await expect(page).toHaveURL(/\/projects\/r-lox$/);
+    await expect(buf(page)).toBeHidden();
+    await command(page, 'term');
+    await expect(bufOut(page)).toContainText('open r-lox');
+  });
+
+  test('exit leaves', async ({ page }) => {
+    await bufRun(page, 'exit');
+    await expect(buf(page)).toBeHidden();
+  });
+});

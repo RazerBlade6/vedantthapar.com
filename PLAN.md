@@ -1,6 +1,6 @@
 # vedantthapar.com — Portfolio Plan
 
-Status: **M1 + M2 live** (resume PDF pending) · Last updated: 2026-10-25
+Status: **M1–M3 live** · ASCII photo + resume PDF wait on Vedant · Last updated: 2026-10-25
 
 ---
 

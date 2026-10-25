@@ -15,7 +15,7 @@ const root: VNode = {
       kind: 'dir',
       url: '/#projects',
       children: [
-        { name: 'apex.md', kind: 'file', url: '/projects/apex', description: 'TUI' },
+        { name: 'apex.md', kind: 'file', url: '/projects/apex', src: '/term/projects/apex.md.json', description: 'TUI' },
         { name: 'r-lox.md', kind: 'file', url: '/projects/r-lox' },
         { name: 'archive', kind: 'dir', url: '/projects/archive', children: [{ name: 'novarv.md', kind: 'file', url: '/projects/archive#novarv' }] },
       ],
@@ -25,6 +25,7 @@ const root: VNode = {
 
 const env = (over: Partial<Env> = {}): Env => ({
   root,
+  mode: 'page',
   cwd: '/',
   theme: 'gruvbox',
   themes: ['gruvbox', 'paper', 'phosphor', 'mocha', 'latte'],
@@ -106,6 +107,36 @@ describe('commands', () => {
     expect(r.lines[0][1].cmd).toBe('ls projects');
     expect(text(execute('xyzzy', env()).lines)).toContain('try help');
     expect(nearest('thme', ['theme', 'help'])).toBe('theme');
+  });
+});
+
+describe('buffer mode', () => {
+  const buf = (over: Partial<Env> = {}) => env({ mode: 'buffer', ...over });
+
+  it('term enters, and says so when already there', () => {
+    expect(execute('term', env()).actions).toEqual([{ type: 'term', on: true }]);
+    expect(text(execute('term', buf()).lines)).toContain('already here');
+  });
+
+  it('cat prints instead of navigating', () => {
+    expect(execute('cat projects/apex', buf()).actions).toEqual([{ type: 'print', src: '/term/projects/apex.md.json' }]);
+  });
+
+  it('cd only changes directory', () => {
+    const r = execute('cd projects', buf());
+    expect(r.cwd).toBe('/projects');
+    expect(r.actions).toBeUndefined();
+  });
+
+  it('ls entries cat files instead of linking', () => {
+    const seg = execute('ls projects', buf()).lines[0][0];
+    expect(seg).toEqual({ text: 'apex.md', cmd: 'cat ~/projects/apex.md' });
+  });
+
+  it('open and exit leave the buffer', () => {
+    expect(execute('open apex', buf()).actions?.[0]).toEqual({ type: 'term', on: false });
+    expect(execute('exit', buf()).actions).toEqual([{ type: 'term', on: false }]);
+    expect(execute('exit', env()).actions).toEqual([{ type: 'close' }]);
   });
 });
 

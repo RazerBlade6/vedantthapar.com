@@ -5,6 +5,7 @@ const TONES = {
   accent: 'text-accent',
   error: 'text-fg-strong',
   strong: 'text-fg-strong font-medium',
+  title: 'block py-2 font-pixel text-3xl leading-none text-fg-strong sm:text-4xl',
 } as const;
 
 /** Build output DOM with textContent only — command output never goes through innerHTML. */

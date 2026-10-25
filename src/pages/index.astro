@@ -94,23 +94,13 @@ const { status } = site;
     <SectionHeading id="about" command="cat about.txt" label="About" />
     <!-- TODO(vedant): dithered photo goes here once supplied (PLAN.md M4) -->
     <div class="flex flex-col gap-4 leading-relaxed">
-      <p>
-        I'm a Computer Science graduate from BITS Pilani, Dubai (2026), now doing R&D at 1Kosmos in New Delhi, where I
-        build the infrastructure their agents run on.
-      </p>
-      <p>
-        Most of my work is AI engineering — agents, RAG, MCP tooling — but I keep getting pulled down the stack. I've
-        written an interpreter in Rust, a pipelined RISC-V CPU in SystemVerilog, and I'm slowly writing a kernel in
-        assembly. I think the best agent systems are built by people who understand what's underneath them.
-      </p>
+      {site.about.map((para) => <p>{para}</p>)}
     </div>
   </section>
 
   <section aria-labelledby="contact" class="mt-20">
     <SectionHeading id="contact" command="cat contact" label="Contact" />
-    <p class="mb-4 leading-relaxed">
-      I'm looking for full-time roles from 2026 — India or remote. The fastest way to reach me is email.
-    </p>
+    <p class="mb-4 leading-relaxed">{site.contactNote}</p>
     <ul class="flex flex-col gap-2 font-mono text-sm">
       <li><span class="label inline-block w-20">email</span><a href={`mailto:${site.email}`}>{site.email}</a></li>
       <li><span class="label inline-block w-20">github</span><a href={site.github}>RazerBlade6</a></li>

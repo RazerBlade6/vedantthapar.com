@@ -1,4 +1,4 @@
-import type { Env, Line, Result, Seg, VNode } from './types';
+import type { Action, Env, Line, Result, Seg, VNode } from './types';
 import { canonical, display, find, lookup, normalize } from './vfs';
 
 export interface Command {
@@ -9,13 +9,13 @@ export interface Command {
 }
 
 const err = (text: string): Result => ({ lines: [[{ text, tone: 'error' }]] });
+const leaveBuffer = (env: Env): Action[] => (env.mode === 'buffer' ? [{ type: 'term', on: false }] : []);
 const say = (...segs: Seg[]): Line => segs;
 
-/** One entry of `ls` output: dirs run `ls` on click, files link to their page. */
-function entry(node: VNode, path: string): Seg {
-  return node.kind === 'dir'
-    ? { text: node.name + '/', cmd: `ls ${display(path)}`, tone: 'accent' }
-    : { text: node.name, href: node.url };
+/** One entry of `ls` output: dirs run `ls` on click; files link to their page, or `cat` themselves in buffer mode. */
+function entry(node: VNode, path: string, mode: Env['mode']): Seg {
+  if (node.kind === 'dir') return { text: node.name + '/', cmd: `ls ${display(path)}`, tone: 'accent' };
+  return mode === 'buffer' ? { text: node.name, cmd: `cat ${display(path)}` } : { text: node.name, href: node.url };
 }
 
 function splitFlags(args: string[]) {
@@ -33,16 +33,16 @@ const ls: Command = {
     const node = lookup(env.root, path);
     if (!node) return err(`ls: ${rest[0]}: No such file or directory`);
     const real = canonical(env.root, path);
-    if (node.kind === 'file') return { lines: [[entry(node, real)]] };
+    if (node.kind === 'file') return { lines: [[entry(node, real, env.mode)]] };
     const kids = node.children ?? [];
     if (!kids.length) return { lines: [] };
     if (!flags.has('l')) {
-      return { lines: [kids.flatMap((k, i) => [...(i ? [{ text: '  ' }] : []), entry(k, `${real}/${k.name}`.replace('//', '/'))])] };
+      return { lines: [kids.flatMap((k, i) => [...(i ? [{ text: '  ' }] : []), entry(k, `${real}/${k.name}`.replace('//', '/'), env.mode)])] };
     }
     const width = Math.max(...kids.map((k) => k.name.length + (k.kind === 'dir' ? 1 : 0))) + 2;
     return {
       lines: kids.map((k) => {
-        const e = entry(k, `${real}/${k.name}`.replace('//', '/'));
+        const e = entry(k, `${real}/${k.name}`.replace('//', '/'), env.mode);
         const desc = k.description ?? '';
         const short = desc.length > 64 ? desc.slice(0, 63).trimEnd() + '…' : desc;
         return [e, { text: ' '.repeat(width - e.text.length) }, { text: short, tone: 'muted' }];
@@ -54,26 +54,32 @@ const ls: Command = {
 const cd: Command = {
   name: 'cd',
   usage: 'cd [dir]',
-  summary: 'go to a directory (and its page)',
+  summary: 'change directory (and go to that section)',
   run(args, env) {
     const path = normalize(env.cwd, args[0] ?? '~');
     const node = lookup(env.root, path);
     if (!node) return err(`cd: ${args[0]}: No such file or directory`);
     if (node.kind !== 'dir') return err(`cd: ${args[0]}: Not a directory`);
-    return { lines: [], cwd: canonical(env.root, path), actions: node.url ? [{ type: 'navigate', url: node.url }] : [] };
+    const cwd = canonical(env.root, path);
+    // in the buffer, cd is just cd; on the page it also takes you to that section
+    if (env.mode === 'buffer' || !node.url) return { lines: [], cwd };
+    return { lines: [], cwd, actions: [{ type: 'navigate', url: node.url }] };
   },
 };
 
 const cat: Command = {
   name: 'cat',
   usage: 'cat <file>',
-  summary: 'open a file',
+  summary: 'show a file',
   run(args, env) {
     if (!args[0]) return err('usage: cat <file>');
     const node = lookup(env.root, normalize(env.cwd, args[0]));
     if (!node) return err(`cat: ${args[0]}: No such file or directory`);
     if (node.kind === 'dir') return err(`cat: ${args[0]}: Is a directory`);
     if (node.binary) return { lines: [say({ text: `cat: ${node.name}: binary file — try `, tone: 'error' }, { text: 'resume', cmd: 'resume' })] };
+    if (env.mode === 'buffer') {
+      return node.src ? { lines: [], actions: [{ type: 'print', src: node.src }] } : err(`cat: ${args[0]}: nothing to show`);
+    }
     return { lines: [], actions: node.url ? [{ type: 'navigate', url: node.url }, { type: 'close' }] : [] };
   },
 };
@@ -86,7 +92,8 @@ const open: Command = {
     if (!args[0]) return err('usage: open <project>   (try: ls ~/projects)');
     const hit = lookup(env.root, normalize(env.cwd, args[0])) ?? find(env.root, args[0])?.node;
     if (!hit?.url) return err(`open: ${args[0]}: no such project`);
-    return { lines: [], actions: [{ type: 'navigate', url: hit.url }, { type: 'close' }] };
+    // open always shows the page, so it leaves the buffer
+    return { lines: [], actions: [...leaveBuffer(env), { type: 'navigate', url: hit.url }, { type: 'close' }] };
   },
 };
 
@@ -145,7 +152,22 @@ const theme: Command = {
 };
 
 const clear: Command = { name: 'clear', usage: 'clear', summary: 'clear the output', run: () => ({ lines: [], actions: [{ type: 'clear' }] }) };
-const exit: Command = { name: 'exit', usage: 'exit', summary: 'close the command line', run: () => ({ lines: [], actions: [{ type: 'close' }] }) };
+const exit: Command = {
+  name: 'exit',
+  usage: 'exit',
+  summary: 'leave the terminal',
+  run: (_, env) => ({ lines: [], actions: env.mode === 'buffer' ? leaveBuffer(env) : [{ type: 'close' }] }),
+};
+
+const term: Command = {
+  name: 'term',
+  usage: 'term',
+  summary: 'full-screen terminal mode',
+  run: (_, env) =>
+    env.mode === 'buffer'
+      ? { lines: [say({ text: 'term: already here — ', tone: 'muted' }, { text: 'exit', cmd: 'exit' }, { text: ' to leave', tone: 'muted' })] }
+      : { lines: [], actions: [{ type: 'term', on: true }] },
+};
 
 const help: Command = {
   name: 'help',
@@ -173,7 +195,7 @@ export const KEYS: [string, string][] = [
   ['?', 'this help'],
   ['tab', 'complete commands, paths and themes'],
   ['↑ / ↓', 'command history'],
-  ['esc', 'close'],
+  ['esc', 'close (twice in full-screen mode)'],
 ];
 
-export const COMMANDS: Command[] = [help, ls, cd, cat, open, pwd, resume, contact, theme, clear, exit];
+export const COMMANDS: Command[] = [help, ls, cd, cat, open, pwd, resume, contact, theme, term, clear, exit];
