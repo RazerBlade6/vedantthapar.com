@@ -151,6 +151,18 @@ const theme: Command = {
   },
 };
 
+const effects: Command = {
+  name: 'effects',
+  usage: 'effects [on|off]',
+  summary: 'toggle the CRT glow and scanlines',
+  run(args, env) {
+    const arg = args[0]?.toLowerCase();
+    if (arg && arg !== 'on' && arg !== 'off') return err(`effects: ${args[0]}: expected on or off`);
+    const on = arg ? arg === 'on' : !env.effects;
+    return { lines: [say({ text: `effects ${on ? 'on' : 'off'}`, tone: 'muted' })], actions: [{ type: 'effects', on }] };
+  },
+};
+
 const clear: Command = { name: 'clear', usage: 'clear', summary: 'clear the output', run: () => ({ lines: [], actions: [{ type: 'clear' }] }) };
 const exit: Command = {
   name: 'exit',
@@ -198,4 +210,4 @@ export const KEYS: [string, string][] = [
   ['esc', 'close (twice in full-screen mode)'],
 ];
 
-export const COMMANDS: Command[] = [help, ls, cd, cat, open, pwd, resume, contact, theme, term, clear, exit];
+export const COMMANDS: Command[] = [help, ls, cd, cat, open, pwd, resume, contact, theme, effects, term, clear, exit];

@@ -10,11 +10,27 @@ interface Props {
   description?: string;
   /** Path shown in the status line, e.g. "~/projects/apex.md" */
   file: string;
+  /** Social preview image under /og/, e.g. "projects/apex" (see pages/og) */
+  og?: string;
 }
 
-const { title, description = site.description, file } = Astro.props;
+const { title, description = site.description, file, og = 'index' } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — AI engineer`;
-const canonical = new URL(Astro.url.pathname, site.url);
+// with build.format 'file', Astro reports "/index.html" and "/projects/apex.html"; the site serves clean URLs
+const path = Astro.url.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+const canonical = new URL(path, site.url);
+const ogImage = new URL(`/og/${og}.png`, site.url);
+const isHome = path === '/';
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: site.name,
+  url: site.url,
+  email: `mailto:${site.email}`,
+  jobTitle: 'AI Engineer',
+  description: site.description,
+  sameAs: [site.github, site.linkedin].filter(Boolean),
+};
 ---
 
 <!doctype html>
@@ -26,6 +42,7 @@ const canonical = new URL(Astro.url.pathname, site.url);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="preload" href="/fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
 
@@ -33,9 +50,15 @@ const canonical = new URL(Astro.url.pathname, site.url);
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${title ?? site.name} — ${description}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {isHome && <script is:inline type="application/ld+json" set:html={JSON.stringify(person)} />}
 
-    <!-- Pre-paint theme: stored choice, else system preference. Re-applied after client-side navigation. -->
+    <!-- Pre-paint theme + effects: stored choice, else system preference. Re-applied after client-side navigation. -->
     <script is:inline define:vars={{ themes: THEMES }}>
       (function () {
         var light = matchMedia('(prefers-color-scheme: light)');
@@ -51,7 +74,16 @@ const canonical = new URL(Astro.url.pathname, site.url);
           }
           return themes.indexOf(t) >= 0 ? t : light.matches ? 'paper' : 'gruvbox';
         }
-        function apply() { document.documentElement.dataset.theme = pick(); }
+        // CRT effects: stored choice, else on — unless the system asks for reduced motion
+        function effects() {
+          var e;
+          try { e = localStorage.getItem('effects'); } catch (err) {}
+          return e === 'on' || e === 'off' ? e : matchMedia('(prefers-reduced-motion: reduce)').matches ? 'off' : 'on';
+        }
+        function apply() {
+          document.documentElement.dataset.theme = pick();
+          document.documentElement.dataset.effects = effects();
+        }
         apply();
         if (!window.__themeBound) {
           window.__themeBound = true;

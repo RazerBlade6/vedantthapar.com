@@ -21,7 +21,7 @@ const { Content } = await render(project);
 const { title, summary, stack, repo, live, status } = project.data;
 ---
 
-<Base title={title} description={summary} file={`~/projects/${project.id}.md`}>
+<Base title={title} description={summary} file={`~/projects/${project.id}.md`} og={`projects/${project.id}`}>
   <p class="label mb-8"><a href="/#projects">cd ..</a></p>
 
   <header class="flex flex-col gap-4">

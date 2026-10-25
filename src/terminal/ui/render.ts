@@ -6,6 +6,8 @@ const TONES = {
   error: 'text-fg-strong',
   strong: 'text-fg-strong font-medium',
   title: 'block py-2 font-pixel text-3xl leading-none text-fg-strong sm:text-4xl',
+  // fixed-width block that never wraps: 56 columns fit a phone at this size
+  art: 'block overflow-x-auto py-2 text-[9px] leading-[1.15] whitespace-pre text-fg-muted sm:text-xs',
 } as const;
 
 /** Build output DOM with textContent only — command output never goes through innerHTML. */
@@ -27,6 +29,7 @@ export function renderLine(line: Line, run: (cmd: string) => void): HTMLElement 
       node = document.createElement('span');
     }
     if (seg.tone) node.className += ' ' + TONES[seg.tone];
+    if (seg.scheme) node.className += ` scheme-${seg.scheme}`;
     node.textContent = seg.text;
     el.append(node);
   }

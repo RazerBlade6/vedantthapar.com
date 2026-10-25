@@ -1,6 +1,6 @@
 # vedantthapar.com — Portfolio Plan
 
-Status: **M1–M3 live** · ASCII photo + resume PDF wait on Vedant · Last updated: 2026-10-25
+Status: **v1.0.0 live** (M1–M4) · open: demo recordings, Cloudflare Web Analytics · Last updated: 2026-10-25
 
 ---
 
@@ -345,6 +345,12 @@ portfolio/
 - Build-time OG images, Web Analytics, sitemap, JSON-LD
 - v1.1 easter eggs
 - **Done when:** sharing any URL in Slack/LinkedIn shows a terminal-styled card; all project pages have real demos and diagrams.
+
+#### M4 notes (2026-10-25)
+- Photo processing runs locally (`node scripts/process-photo.mjs <photo>`); only the outputs are committed, never the source photo. Re-run it when the photo changes; crops at the top of the script.
+- Favicon is a 3-tone posterized face on gruvbox yellow, not dithered: 1-bit dithering is noise at 32px.
+- Architecture diagrams stay as ASCII box drawings rather than SVG: they're on-brand, readable as text, and the same source renders in full-buffer mode.
+- Waiting on Vedant: asciinema/GIF demo recordings (Demo placeholders remain), Cloudflare Web Analytics (dashboard toggle, no code).
 
 ### Later / maybe
 - First blog post → unhide `posts/`

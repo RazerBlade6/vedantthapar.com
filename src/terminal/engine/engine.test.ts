@@ -29,6 +29,7 @@ const env = (over: Partial<Env> = {}): Env => ({
   cwd: '/',
   theme: 'gruvbox',
   themes: ['gruvbox', 'paper', 'phosphor', 'mocha', 'latte'],
+  effects: true,
   email: 'contact@example.com',
   github: 'https://github.com/x',
   resume: '/resume.pdf',
@@ -93,6 +94,13 @@ describe('commands', () => {
     expect(text(execute('theme neon', env()).lines)).toContain('unknown theme');
   });
 
+  it('effects toggles, or sets on/off explicitly', () => {
+    expect(execute('effects', env()).actions).toEqual([{ type: 'effects', on: false }]);
+    expect(execute('effects', env({ effects: false })).actions).toEqual([{ type: 'effects', on: true }]);
+    expect(execute('effects ON', env()).actions).toEqual([{ type: 'effects', on: true }]);
+    expect(text(execute('effects maybe', env()).lines)).toContain('expected on or off');
+  });
+
   it('resume explains when there is no PDF yet', () => {
     expect(text(execute('resume', env({ resume: undefined })).lines)).toContain('not published yet');
   });
@@ -137,6 +145,29 @@ describe('buffer mode', () => {
     expect(execute('open apex', buf()).actions?.[0]).toEqual({ type: 'term', on: false });
     expect(execute('exit', buf()).actions).toEqual([{ type: 'term', on: false }]);
     expect(execute('exit', env()).actions).toEqual([{ type: 'close' }]);
+  });
+});
+
+describe('easter eggs', () => {
+  it('answer the classics', () => {
+    expect(text(execute('sudo rm -rf /', env()).lines)).toContain('not in the sudoers file');
+    expect(text(execute('rm -rf /', env()).lines)).toContain('load-bearing');
+    expect(text(execute('whoami', env()).lines)).toContain('guest');
+    expect(text(execute('echo hello world', env()).lines)).toBe('hello world');
+    expect(text(execute('man ls', env()).lines)).toContain('ls [-l] [path]');
+    expect(text(execute('neofetch', env({ theme: 'mocha' })).lines)).toMatch(/Theme:\s+mocha/);
+  });
+
+  it(':q quits like exit', () => {
+    expect(execute('q', env()).actions).toEqual([{ type: 'close' }]);
+    expect(execute(':wq', env({ mode: 'buffer' })).actions).toEqual([{ type: 'term', on: false }]);
+  });
+
+  it('stay hidden from help, completion and suggestions', () => {
+    expect(text(execute('help', env()).lines)).not.toContain('sudo');
+    expect(complete('sud', env()).options).toEqual([]);
+    expect(complete('sud', env()).line).toBe('sud');
+    expect(text(execute('neofech', env()).lines)).not.toContain('neofetch');
   });
 });
 

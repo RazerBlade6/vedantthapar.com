@@ -92,9 +92,16 @@ const { status } = site;
 
   <section aria-labelledby="about" class="mt-20">
     <SectionHeading id="about" command="cat about.txt" label="About" />
-    <!-- TODO(vedant): dithered photo goes here once supplied (PLAN.md M4) -->
-    <div class="flex flex-col gap-4 leading-relaxed">
-      {site.about.map((para) => <p>{para}</p>)}
+    <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
+      <div
+        role="img"
+        aria-label="Dithered portrait of Vedant Thapar"
+        class="dither size-40 shrink-0 sm:order-last sm:size-48"
+      >
+      </div>
+      <div class="flex flex-col gap-4 leading-relaxed">
+        {site.about.map((para) => <p>{para}</p>)}
+      </div>
     </div>
   </section>
 

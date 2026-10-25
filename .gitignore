@@ -6,8 +6,10 @@ dist/
 .env.*
 .DS_Store
 
-# Resume PDFs contain phone numbers — kept out of the public repo until a phone-less version exists
+# Source files: the old resume has phone numbers; the photo is only published in processed form
+# (scripts/process-photo.mjs). public/resume.pdf is the published, phone-less copy.
 /Vedant_Thapar_Resume.pdf
-/public/resume.pdf
+/Vedant_Resume.pdf
+/image.png
 test-results/
 playwright-report/

@@ -2,6 +2,7 @@ import { navigate } from 'astro:transitions/client';
 import { THEMES, site, type Theme } from '../../site';
 import { complete, display, execute, History, type Action, type Env, type Line, type VNode } from '../engine';
 import { renderLine } from './render';
+import { effectsOn, setEffects } from './effects';
 import { currentTheme, cycleTheme, setTheme } from './theme';
 
 /** What the status-line prompt is doing. Full-buffer mode is separate: it has its own prompt. */
@@ -51,6 +52,8 @@ export function mountTerminal() {
   const input = $<HTMLInputElement>(root, '[data-input]');
   const themeBtn = $<HTMLButtonElement>(root, '[data-theme-cycle]');
   const themeLabel = $<HTMLElement>(root, '[data-theme-label]');
+  const fxBtn = $<HTMLButtonElement>(root, '[data-fx]');
+  const fxLabel = $<HTMLElement>(root, '[data-fx-label]');
   // full-buffer mode
   const buffer = $<HTMLElement>(root, '[data-buffer]');
   const bufScroll = $<HTMLElement>(root, '[data-buf-scroll]');
@@ -76,6 +79,7 @@ export function mountTerminal() {
   openBtn.disabled = false;
   root.querySelectorAll<HTMLElement>('[data-hint]').forEach((h) => (h.hidden = false));
   themeBtn.hidden = false;
+  fxBtn.hidden = false;
 
   const env = (): Env => ({
     root: vfs,
@@ -83,6 +87,7 @@ export function mountTerminal() {
     cwd,
     theme: currentTheme(),
     themes: THEMES,
+    effects: effectsOn(),
     email: site.email,
     github: site.github,
     resume: site.resume,
@@ -95,6 +100,14 @@ export function mountTerminal() {
   };
   themeBtn.addEventListener('click', cycleTheme);
   document.addEventListener('themechange', renderTheme);
+
+  const renderEffects = () => {
+    const on = effectsOn();
+    fxLabel.textContent = on ? 'on' : 'off';
+    fxBtn.setAttribute('aria-pressed', String(on));
+  };
+  fxBtn.addEventListener('click', () => setEffects(!effectsOn()));
+  document.addEventListener('effectschange', renderEffects);
 
   function setMode(next: Mode) {
     mode = next;
@@ -239,6 +252,8 @@ export function mountTerminal() {
         return go(action.url);
       case 'theme':
         return setTheme(action.name as Theme);
+      case 'effects':
+        return setEffects(action.on);
       case 'print':
         return printFile(action.src);
       case 'term':
@@ -454,5 +469,6 @@ export function mountTerminal() {
     }
     searchHits = [];
     renderTheme();
+    renderEffects();
   });
 }

@@ -14,9 +14,8 @@ export const site = {
   email: "contact@vedantthapar.com",
   github: "https://github.com/RazerBlade6",
   linkedin: "https://www.linkedin.com/in/vedant-thapar-52b962304/",
-  // Resume links are hidden until a phone-less PDF is added at public/resume.pdf;
-  // then set this back to "/resume.pdf" (and drop it from .gitignore).
-  resume: undefined as string | undefined,
+  // Set to undefined to hide every resume link (page, terminal, 404)
+  resume: "/resume.pdf" as string | undefined,
   repo: "https://github.com/RazerBlade6/vedantthapar.com",
   // Shared by the About section and `cat about.txt`
   about: [

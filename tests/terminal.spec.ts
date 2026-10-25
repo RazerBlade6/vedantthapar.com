@@ -208,3 +208,74 @@ test.describe('full-buffer mode', () => {
     await expect(buf(page)).toBeHidden();
   });
 });
+
+test.describe('M4 polish', () => {
+  test('portrait, resume and social previews are in place', async ({ page, request }) => {
+    await page.goto('/');
+    await expect(page.getByRole('img', { name: 'Dithered portrait of Vedant Thapar' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Resume/ }).first()).toHaveAttribute('href', '/resume.pdf');
+    const og = await page.locator('meta[property="og:image"]').getAttribute('content');
+    expect(og).toBe('https://vedantthapar.com/og/index.png');
+    for (const path of ['/og/index.png', '/og/projects/apex.png', '/resume.pdf', '/favicon.svg', '/robots.txt']) {
+      expect((await request.get(path)).status(), path).toBe(200);
+    }
+    expect(await page.locator('script[type="application/ld+json"]').count()).toBe(1);
+  });
+
+  test('project pages point at their own preview image', async ({ page }) => {
+    await page.goto('/projects/r-lox');
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://vedantthapar.com/og/projects/r-lox.png');
+  });
+
+  test('cat about.txt in the buffer shows the ASCII portrait for the current scheme only', async ({ page }) => {
+    await page.goto('/?theme=paper');
+    await expect(page.locator('[data-theme-cycle]')).toBeVisible();
+    await command(page, 'term');
+    await page.locator('[data-buf-input]').fill('cat about.txt');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('[data-buf-output] .scheme-light')).toBeVisible();
+    await expect(page.locator('[data-buf-output] .scheme-dark')).toBeHidden();
+  });
+});
+
+test('canonical URLs are the clean ones the site serves', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://vedantthapar.com/');
+  await page.goto('/projects/apex');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://vedantthapar.com/projects/apex');
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', 'https://vedantthapar.com/projects/apex');
+});
+
+test.describe('CRT effects', () => {
+  test('on by default on every theme, toggled from the status line and remembered', async ({ page }) => {
+    await page.goto('/?theme=paper');
+    await expect(page.locator('html')).toHaveAttribute('data-effects', 'on');
+    const fx = page.locator('[data-fx]');
+    await expect(fx).toHaveAttribute('aria-pressed', 'true');
+    await fx.click();
+    await expect(page.locator('html')).toHaveAttribute('data-effects', 'off');
+    await expect(fx).toHaveAttribute('aria-pressed', 'false');
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-effects', 'off');
+    // and it survives client-side navigation
+    await page.getByRole('link', { name: /Apex/ }).first().click();
+    await expect(page).toHaveURL(/\/projects\/apex$/);
+    await expect(page.locator('html')).toHaveAttribute('data-effects', 'off');
+  });
+
+  test('the effects command switches them', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('[data-fx]')).toBeVisible();
+    await command(page, 'effects off');
+    await expect(page.locator('html')).toHaveAttribute('data-effects', 'off');
+    await expect(page.locator('[data-fx-label]')).toHaveText('off');
+  });
+
+  test.describe('reduced motion', () => {
+    test.use({ reducedMotion: 'reduce' });
+    test('starts with effects off', async ({ page }) => {
+      await page.goto('/');
+      await expect(page.locator('html')).toHaveAttribute('data-effects', 'off');
+    });
+  });
+});

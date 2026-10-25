@@ -119,11 +119,22 @@ const chips = ['help', 'ls projects', 'open apex', 'contact', 'theme', 'term', .
     <div class="flex items-center pr-2">
       <button
         type="button"
+        data-fx
+        hidden
+        aria-label="CRT effects"
+        aria-pressed="true"
+        class="flex min-h-11 cursor-pointer items-center gap-1.5 px-2 hover:text-fg-strong"
+      >
+        <span aria-hidden="true">fx:</span>
+        <span data-fx-label aria-hidden="true" class="text-fg-strong"></span>
+      </button>
+      <button
+        type="button"
         data-theme-cycle
         hidden
         class="flex min-h-11 cursor-pointer items-center gap-1.5 px-2 hover:text-fg-strong"
       >
-        <span aria-hidden="true">theme:</span>
+        <span aria-hidden="true" class="hidden sm:inline">theme:</span>
         <span data-theme-label class="text-fg-strong"></span>
       </button>
     </div>

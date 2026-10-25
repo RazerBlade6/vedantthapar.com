@@ -3,7 +3,9 @@ export interface Seg {
   text: string;
   href?: string;
   cmd?: string;
-  tone?: 'muted' | 'accent' | 'error' | 'strong' | 'title';
+  tone?: 'muted' | 'accent' | 'error' | 'strong' | 'title' | 'art';
+  /** only show on dark or light themes (e.g. ASCII art, whose density depends on the background) */
+  scheme?: 'dark' | 'light';
 }
 
 export type Line = Seg[];
@@ -12,6 +14,7 @@ export type Line = Seg[];
 export type Action =
   | { type: 'navigate'; url: string }
   | { type: 'theme'; name: string }
+  | { type: 'effects'; on: boolean }
   | { type: 'copy'; text: string }
   | { type: 'clear' }
   | { type: 'close' }
@@ -39,6 +42,8 @@ export interface Env {
   cwd: string;
   theme: string;
   themes: readonly string[];
+  /** CRT glow + scanlines */
+  effects: boolean;
   email: string;
   github: string;
   resume?: string;

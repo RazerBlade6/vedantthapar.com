@@ -40,7 +40,6 @@
   }
   body {
     @apply bg-bg font-sans text-fg antialiased;
-    text-shadow: 0 0 6px color-mix(in srgb, var(--accent) calc(var(--glow) * 100%), transparent);
   }
   ::selection {
     background: var(--selection);
@@ -64,23 +63,24 @@
   }
 }
 
-/* phosphor only: faint CRT scanlines */
-[data-theme="phosphor"] body::after {
+/*
+ * CRT effects: phosphor glow on text + faint scanlines over everything. Strength is per theme
+ * (--glow, --scanline in themes.css); on/off is <html data-effects>, set before paint in Base.astro
+ * and toggled from the status line or the `effects` command. No JS, no effects.
+ */
+[data-effects="on"] body {
+  text-shadow: 0 0 6px color-mix(in srgb, var(--accent) calc(var(--glow) * 100%), transparent);
+}
+[data-effects="on"] body::after {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 100;
-  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 0.18) 2px 3px);
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, var(--scanline) 2px 3px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body {
-    text-shadow: none;
-  }
-  [data-theme="phosphor"] body::after {
-    display: none;
-  }
   *,
   *::before,
   *::after {
@@ -106,6 +106,31 @@
   --tw-prose-pre-bg: var(--bg-alt);
   --tw-prose-th-borders: var(--border);
   --tw-prose-td-borders: var(--border);
+}
+
+/* the 1-bit portrait, inked in the theme's colours (see --dither-* in themes.css) */
+@utility dither {
+  background: var(--dither-ink);
+  mask: var(--dither-mask) center / 100% 100% no-repeat;
+}
+
+/* content that only makes sense on one kind of background (e.g. ASCII art density) */
+[data-theme="paper"] .scheme-dark,
+[data-theme="latte"] .scheme-dark,
+[data-theme="gruvbox"] .scheme-light,
+[data-theme="phosphor"] .scheme-light,
+[data-theme="mocha"] .scheme-light {
+  display: none;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .scheme-dark {
+    display: none;
+  }
+}
+@media not (prefers-color-scheme: light) {
+  :root:not([data-theme]) .scheme-light {
+    display: none;
+  }
 }
 
 @utility label {

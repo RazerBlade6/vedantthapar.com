@@ -7,7 +7,7 @@ const archived = (await getCollection('projects', (p) => !p.data.featured)).sort
 );
 ---
 
-<Base title="Archive" description="Other projects by Vedant Thapar." file="~/projects/archive/">
+<Base title="Archive" description="Other projects by Vedant Thapar." file="~/projects/archive/" og="projects/archive">
   <p class="label mb-8"><a href="/#projects">cd ..</a></p>
   <h1 class="text-3xl font-semibold tracking-tight text-fg-strong">Archive</h1>
   <p class="mt-4 leading-relaxed">Smaller, older or unfinished — but each taught me something.</p>

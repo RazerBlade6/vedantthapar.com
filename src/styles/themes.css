@@ -1,6 +1,9 @@
 /*
  * Theme tokens. Themes change colors only — type and layout are shared.
  * Every text/background pairing passes WCAG AA (4.5:1) against both --bg and --bg-alt.
+ * --dither-mask picks which pixels of the 1-bit photo are inked: the lit ones on dark themes,
+ * the shadowed ones on light themes. --dither-ink is their colour.
+ * --glow / --scanline set the CRT effects' strength (when <html data-effects="on">).
  *
  * No data-theme attribute (JS disabled): gruvbox, or paper when the system is light.
  * With JS, the pre-paint script in Base.astro sets data-theme from storage or the system.
@@ -19,7 +22,10 @@
   --accent-fg: #282828;
   --link: #83a598;
   --selection: #504945;
-  --glow: 0;
+  --glow: 0.3;
+  --scanline: rgb(0 0 0 / 0.16);
+  --dither-mask: url("/photo/dither-dark.png");
+  --dither-ink: var(--fg);
 }
 
 @media (prefers-color-scheme: light) {
@@ -35,7 +41,10 @@
     --accent-fg: #f4efe4;
     --link: #1f4e79;
     --selection: #e3d5b8;
-    --glow: 0;
+    --glow: 0.2;
+    --scanline: rgb(60 40 20 / 0.06);
+    --dither-mask: url("/photo/dither-light.png");
+    --dither-ink: var(--fg-strong);
   }
 }
 
@@ -51,7 +60,10 @@
   --accent-fg: #f4efe4;
   --link: #1f4e79;
   --selection: #e3d5b8;
-  --glow: 0;
+  --glow: 0.2;
+  --scanline: rgb(60 40 20 / 0.06);
+  --dither-mask: url("/photo/dither-light.png");
+  --dither-ink: var(--fg-strong);
 }
 
 [data-theme="phosphor"] {
@@ -67,6 +79,9 @@
   --link: #5cf08a;
   --selection: #1d3b26;
   --glow: 0.3;
+  --scanline: rgb(0 0 0 / 0.18);
+  --dither-mask: url("/photo/dither-dark.png");
+  --dither-ink: var(--accent);
 }
 
 [data-theme="mocha"] {
@@ -81,7 +96,10 @@
   --accent-fg: #1e1e2e;
   --link: #89b4fa;
   --selection: #45475a;
-  --glow: 0;
+  --glow: 0.35;
+  --scanline: rgb(0 0 0 / 0.16);
+  --dither-mask: url("/photo/dither-dark.png");
+  --dither-ink: var(--fg);
 }
 
 [data-theme="latte"] {
@@ -96,5 +114,8 @@
   --accent-fg: #eff1f5;
   --link: #1655d4;
   --selection: #ccd0da;
-  --glow: 0;
+  --glow: 0.2;
+  --scanline: rgb(40 40 80 / 0.05);
+  --dither-mask: url("/photo/dither-light.png");
+  --dither-ink: var(--fg-strong);
 }

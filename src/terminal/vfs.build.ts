@@ -2,6 +2,7 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import { site } from '../site';
 import { inline, markdownToLines } from './engine/markdown';
 import type { Line, VNode } from './engine/types';
+import asciiPhoto from './ascii-photo.json';
 
 type Project = CollectionEntry<'projects'>;
 
@@ -90,7 +91,15 @@ async function experienceLines(): Promise<Line[]> {
 /** Rendered content of every file, keyed by path relative to ~ (served as /term/<path>.json). */
 export async function buildBodies(): Promise<Map<string, Line[]>> {
   const bodies = new Map<string, Line[]>();
-  bodies.set('about.txt', site.about.flatMap((para, i) => [...(i ? [[]] : []), inline(para)]));
+  bodies.set('about.txt', [
+    // one block per scheme: which characters read as "bright" depends on the background
+    [
+      { text: asciiPhoto.dark, tone: 'art', scheme: 'dark' },
+      { text: asciiPhoto.light, tone: 'art', scheme: 'light' },
+    ],
+    [],
+    ...site.about.flatMap((para, i) => [...(i ? [[]] : []), inline(para)]),
+  ]);
   bodies.set('experience.log', await experienceLines());
   bodies.set('contact', [
     inline(site.contactNote),
