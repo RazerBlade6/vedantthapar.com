@@ -1,6 +1,6 @@
 # vedantthapar.com — Portfolio Plan
 
-Status: **M1 built locally; deploy pending (needs Cloudflare login + GitHub repo)** · Last updated: 2026-10-25
+Status: **M1 live at vedantthapar.com** (resume PDF + www DNS record pending) · Last updated: 2026-10-25
 
 ---
 

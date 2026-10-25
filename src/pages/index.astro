@@ -24,11 +24,16 @@ const { status } = site;
       <li>{status.availability}</li>
     </ul>
     <div class="mt-1 flex flex-wrap gap-3">
-      <a
-        href={site.resume}
-        class="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm no-underline hover:border-link"
-        >Resume <span aria-hidden="true">&nbsp;↓</span></a
-      >
+      {
+        site.resume && (
+          <a
+            href={site.resume}
+            class="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm no-underline hover:border-link"
+          >
+            Resume <span aria-hidden="true">&nbsp;↓</span>
+          </a>
+        )
+      }
       <a
         href={`mailto:${site.email}`}
         class="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm no-underline hover:border-link"
@@ -117,7 +122,14 @@ const { status } = site;
           </li>
         )
       }
-      <li><span class="label inline-block w-20">resume</span><a href={site.resume}>resume.pdf</a></li>
+      {
+        site.resume && (
+          <li>
+            <span class="label inline-block w-20">resume</span>
+            <a href={site.resume}>resume.pdf</a>
+          </li>
+        )
+      }
     </ul>
   </section>
 </Base>

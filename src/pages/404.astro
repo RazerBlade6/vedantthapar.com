@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { site } from '../site';
 
 const entries = [
   { href: '/', name: 'index.md' },
@@ -7,7 +8,7 @@ const entries = [
   { href: '/#experience', name: 'experience.log' },
   { href: '/#about', name: 'about.txt' },
   { href: '/#contact', name: 'contact' },
-  { href: '/resume.pdf', name: 'resume.pdf' },
+  ...(site.resume ? [{ href: site.resume, name: 'resume.pdf' }] : []),
 ];
 ---
 

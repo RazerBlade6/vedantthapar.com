@@ -14,7 +14,9 @@ export const site = {
   email: "contact@vedantthapar.com",
   github: "https://github.com/RazerBlade6",
   linkedin: "https://www.linkedin.com/in/vedant-thapar-52b962304/",
-  resume: "/resume.pdf",
+  // Resume links are hidden until a phone-less PDF is added at public/resume.pdf;
+  // then set this back to "/resume.pdf" (and drop it from .gitignore).
+  resume: undefined as string | undefined,
   repo: "https://github.com/RazerBlade6/vedantthapar.com",
 } as const;
 
