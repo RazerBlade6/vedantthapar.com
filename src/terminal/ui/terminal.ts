@@ -2,7 +2,8 @@ import { navigate } from 'astro:transitions/client';
 import { THEMES, site, type Theme } from '../../site';
 import { complete, display, execute, History, type Action, type Env, type Line, type VNode } from '../engine';
 import { renderLine } from './render';
-import { effectsOn, setEffects } from './effects';
+import { effectsOn, partsOff, setEffects, setPart } from './effects';
+import { glitch, scheduleGlitches } from './glitch';
 import { currentTheme, cycleTheme, setTheme } from './theme';
 
 /** What the status-line prompt is doing. Full-buffer mode is separate: it has its own prompt. */
@@ -87,7 +88,7 @@ export function mountTerminal() {
     cwd,
     theme: currentTheme(),
     themes: THEMES,
-    effects: effectsOn(),
+    effects: { on: effectsOn(), off: partsOff() },
     email: site.email,
     github: site.github,
     resume: site.resume,
@@ -108,6 +109,7 @@ export function mountTerminal() {
   };
   fxBtn.addEventListener('click', () => setEffects(!effectsOn()));
   document.addEventListener('effectschange', renderEffects);
+  scheduleGlitches();
 
   function setMode(next: Mode) {
     mode = next;
@@ -253,7 +255,9 @@ export function mountTerminal() {
       case 'theme':
         return setTheme(action.name as Theme);
       case 'effects':
-        return setEffects(action.on);
+        return action.part ? setPart(action.part, action.on) : setEffects(action.on);
+      case 'glitch':
+        return glitch();
       case 'print':
         return printFile(action.src);
       case 'term':

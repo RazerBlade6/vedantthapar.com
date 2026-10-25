@@ -3,7 +3,7 @@
  * Every text/background pairing passes WCAG AA (4.5:1) against both --bg and --bg-alt.
  * --dither-mask picks which pixels of the 1-bit photo are inked: the lit ones on dark themes,
  * the shadowed ones on light themes. --dither-ink is their colour.
- * --glow / --scanline set the CRT effects' strength (when <html data-effects="on">).
+ * --glow / --scanline / --crt-band set the CRT effects' strength (when <html data-effects="on">).
  *
  * No data-theme attribute (JS disabled): gruvbox, or paper when the system is light.
  * With JS, the pre-paint script in Base.astro sets data-theme from storage or the system.
@@ -24,6 +24,7 @@
   --selection: #504945;
   --glow: 0.3;
   --scanline: rgb(0 0 0 / 0.16);
+  --crt-band: rgb(255 240 200 / 0.035);
   --dither-mask: url("/photo/dither-dark.png");
   --dither-ink: var(--fg);
 }
@@ -43,6 +44,7 @@
     --selection: #e3d5b8;
     --glow: 0.2;
     --scanline: rgb(60 40 20 / 0.06);
+    --crt-band: rgb(80 50 20 / 0.035);
     --dither-mask: url("/photo/dither-light.png");
     --dither-ink: var(--fg-strong);
   }
@@ -62,6 +64,7 @@
   --selection: #e3d5b8;
   --glow: 0.2;
   --scanline: rgb(60 40 20 / 0.06);
+  --crt-band: rgb(80 50 20 / 0.035);
   --dither-mask: url("/photo/dither-light.png");
   --dither-ink: var(--fg-strong);
 }
@@ -80,6 +83,7 @@
   --selection: #1d3b26;
   --glow: 0.3;
   --scanline: rgb(0 0 0 / 0.18);
+  --crt-band: rgb(92 240 138 / 0.04);
   --dither-mask: url("/photo/dither-dark.png");
   --dither-ink: var(--accent);
 }
@@ -98,6 +102,7 @@
   --selection: #45475a;
   --glow: 0.35;
   --scanline: rgb(0 0 0 / 0.16);
+  --crt-band: rgb(205 214 244 / 0.035);
   --dither-mask: url("/photo/dither-dark.png");
   --dither-ink: var(--fg);
 }
@@ -116,6 +121,7 @@
   --selection: #ccd0da;
   --glow: 0.2;
   --scanline: rgb(40 40 80 / 0.05);
+  --crt-band: rgb(60 60 120 / 0.03);
   --dither-mask: url("/photo/dither-light.png");
   --dither-ink: var(--fg-strong);
 }

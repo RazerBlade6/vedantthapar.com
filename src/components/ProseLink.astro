@@ -1,0 +1,9 @@
+---
+/** Links inside MDX write-ups: other sites open in a new tab, in-site links behave normally. */
+import ExternalLink from './ExternalLink.astro';
+
+const { href = '', ...rest } = Astro.props as { href?: string };
+const external = /^https?:\/\//.test(href);
+---
+
+{external ? <ExternalLink href={href}><slot /></ExternalLink> : <a href={href} {...rest}><slot /></a>}

@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import ExternalLink from '../../components/ExternalLink.astro';
+import ProseLink from '../../components/ProseLink.astro';
 
 export async function getStaticPaths() {
   const featured = (await getCollection('projects', (p) => p.data.featured)).sort(
@@ -43,7 +45,7 @@ const { title, summary, stack, repo, live, status } = project.data;
           <>
             <dt>source</dt>
             <dd>
-              <a href={repo}>{repo.replace('https://', '')}</a>
+              <ExternalLink href={repo}>{repo.replace('https://', '')}</ExternalLink>
             </dd>
           </>
         )
@@ -53,7 +55,7 @@ const { title, summary, stack, repo, live, status } = project.data;
           <>
             <dt>live</dt>
             <dd>
-              <a href={live}>{live.replace('https://', '')}</a>
+              <ExternalLink href={live}>{live.replace('https://', '')}</ExternalLink>
             </dd>
           </>
         )
@@ -62,7 +64,7 @@ const { title, summary, stack, repo, live, status } = project.data;
   </header>
 
   <article class="prose prose-themed mt-10 max-w-none prose-headings:font-semibold prose-h2:mt-12 prose-h2:text-xl prose-pre:text-[0.78rem] prose-pre:leading-snug prose-code:font-normal prose-code:before:content-none prose-code:after:content-none">
-    <Content />
+    <Content components={{ a: ProseLink }} />
   </article>
 
   <nav aria-label="More projects" class="label mt-16 flex justify-between gap-4 border-t border-border pt-6">

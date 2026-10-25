@@ -29,7 +29,7 @@ const env = (over: Partial<Env> = {}): Env => ({
   cwd: '/',
   theme: 'gruvbox',
   themes: ['gruvbox', 'paper', 'phosphor', 'mocha', 'latte'],
-  effects: true,
+  effects: { on: true, off: [] },
   email: 'contact@example.com',
   github: 'https://github.com/x',
   resume: '/resume.pdf',
@@ -94,11 +94,34 @@ describe('commands', () => {
     expect(text(execute('theme neon', env()).lines)).toContain('unknown theme');
   });
 
-  it('effects toggles, or sets on/off explicitly', () => {
-    expect(execute('effects', env()).actions).toEqual([{ type: 'effects', on: false }]);
-    expect(execute('effects', env({ effects: false })).actions).toEqual([{ type: 'effects', on: true }]);
-    expect(execute('effects ON', env()).actions).toEqual([{ type: 'effects', on: true }]);
-    expect(text(execute('effects maybe', env()).lines)).toContain('expected on or off');
+  it('effects lists every part and its state', () => {
+    const out = text(execute('effects', env({ effects: { on: true, off: ['glitch'] } })).lines);
+    expect(out).toMatch(/scanlines\s+on/);
+    expect(out).toMatch(/glitch\s+off/);
+    expect(text(execute('effects', env({ effects: { on: false, off: [] } })).lines)).toMatch(/glow\s+off/);
+  });
+
+  it('effects on|off is the master switch', () => {
+    expect(execute('effects OFF', env()).actions).toEqual([{ type: 'effects', on: false }]);
+    expect(execute('effects on', env()).actions).toEqual([{ type: 'effects', on: true }]);
+  });
+
+  it('effects <part> switches one part, bare toggles it', () => {
+    expect(execute('effects glitch off', env()).actions).toEqual([{ type: 'effects', on: false, part: 'glitch' }]);
+    expect(execute('effects roll', env()).actions).toEqual([{ type: 'effects', on: false, part: 'roll' }]);
+    expect(execute('effects roll', env({ effects: { on: true, off: ['roll'] } })).actions).toEqual([{ type: 'effects', on: true, part: 'roll' }]);
+  });
+
+  it('turning a part on while everything is off turns the master on too', () => {
+    expect(execute('effects glow on', env({ effects: { on: false, off: [] } })).actions).toEqual([
+      { type: 'effects', on: true },
+      { type: 'effects', on: true, part: 'glow' },
+    ]);
+  });
+
+  it('effects rejects nonsense', () => {
+    expect(text(execute('effects sparkle', env()).lines)).toContain('expected on, off or one of');
+    expect(text(execute('effects glow maybe', env()).lines)).toContain('expected on or off');
   });
 
   it('resume explains when there is no PDF yet', () => {

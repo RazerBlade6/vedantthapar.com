@@ -10,11 +10,17 @@ export interface Seg {
 
 export type Line = Seg[];
 
+export const EFFECT_PARTS = ['glow', 'scanlines', 'roll', 'glitch'] as const;
+export type EffectPart = (typeof EFFECT_PARTS)[number];
+
 /** Side effects a command asks the UI to perform. The engine itself never touches the DOM. */
 export type Action =
   | { type: 'navigate'; url: string }
   | { type: 'theme'; name: string }
-  | { type: 'effects'; on: boolean }
+  /** master switch, or one part when `part` is set */
+  | { type: 'effects'; on: boolean; part?: EffectPart }
+  /** run one CRT glitch now */
+  | { type: 'glitch' }
   | { type: 'copy'; text: string }
   | { type: 'clear' }
   | { type: 'close' }
@@ -42,8 +48,8 @@ export interface Env {
   cwd: string;
   theme: string;
   themes: readonly string[];
-  /** CRT glow + scanlines */
-  effects: boolean;
+  /** CRT effects: the master switch, and which parts are switched off */
+  effects: { on: boolean; off: readonly EffectPart[] };
   email: string;
   github: string;
   resume?: string;

@@ -18,6 +18,10 @@ describe('inline', () => {
     ]);
   });
 
+  it('drops emphasis inside link text', () => {
+    expect(inline('[*Crafting Interpreters*](https://c.com)')).toEqual([{ text: 'Crafting Interpreters', href: 'https://c.com' }]);
+  });
+
   it('drops code markers nested inside bold', () => {
     expect(inline('**A `Warehouse` interface.** rest')[0]).toEqual({ text: 'A Warehouse interface.', tone: 'strong' });
   });

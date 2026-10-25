@@ -80,9 +80,13 @@ const person = {
           try { e = localStorage.getItem('effects'); } catch (err) {}
           return e === 'on' || e === 'off' ? e : matchMedia('(prefers-reduced-motion: reduce)').matches ? 'off' : 'on';
         }
+        function effectsOff() {
+          try { return localStorage.getItem('effects-off') || ''; } catch (err) { return ''; }
+        }
         function apply() {
           document.documentElement.dataset.theme = pick();
           document.documentElement.dataset.effects = effects();
+          document.documentElement.dataset.fxOff = effectsOff();
         }
         apply();
         if (!window.__themeBound) {

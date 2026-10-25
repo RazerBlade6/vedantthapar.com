@@ -12,7 +12,7 @@ export function inline(text: string): Seg[] {
     if (m.index > last) segs.push({ text: text.slice(last, m.index) });
     if (m[1] !== undefined) segs.push({ text: m[1].replace(/`/g, ''), tone: 'strong' }); // **bold `code`**
     else if (m[2] !== undefined) segs.push({ text: m[2], tone: 'strong' });
-    else if (m[3] !== undefined) segs.push({ text: m[3], href: m[4] });
+    else if (m[3] !== undefined) segs.push({ text: m[3].replace(/[*`]/g, ''), href: m[4] }); // [*emphasised*](url)
     else segs.push({ text: m[5] });
     last = m.index + m[0].length;
   }

@@ -1,0 +1,12 @@
+---
+/** A link to another site: opens in a new tab, and says so to screen readers. */
+interface Props {
+  href: string;
+  class?: string;
+}
+const { href, class: className } = Astro.props;
+---
+
+<a href={href} target="_blank" rel="noopener noreferrer" class={className}
+  ><slot /><span class="sr-only"> (opens in a new tab)</span></a
+>

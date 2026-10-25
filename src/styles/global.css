@@ -64,20 +64,47 @@
 }
 
 /*
- * CRT effects: phosphor glow on text + faint scanlines over everything. Strength is per theme
- * (--glow, --scanline in themes.css); on/off is <html data-effects>, set before paint in Base.astro
- * and toggled from the status line or the `effects` command. No JS, no effects.
+ * CRT effects, in parts: glow (text), scanlines, roll (scanlines crawl + a refresh band rolls
+ * down) and glitch (ui/glitch.ts). Strength is per theme (--glow, --scanline, --crt-band in
+ * themes.css). <html data-effects="on|off"> is the master switch and data-fx-off lists parts
+ * switched off; both are set before paint in Base.astro. No JS, no effects.
  */
-[data-effects="on"] body {
+[data-effects="on"]:not([data-fx-off~="glow"]) body {
   text-shadow: 0 0 6px color-mix(in srgb, var(--accent) calc(var(--glow) * 100%), transparent);
 }
-[data-effects="on"] body::after {
+[data-effects="on"]:not([data-fx-off~="scanlines"]) body::after {
   content: "";
   position: fixed;
-  inset: 0;
+  /* one extra period above the screen, so crawling by a period loops seamlessly */
+  inset: -3px 0 0;
   pointer-events: none;
   z-index: 100;
   background: repeating-linear-gradient(to bottom, transparent 0 2px, var(--scanline) 2px 3px);
+}
+[data-effects="on"]:not([data-fx-off~="roll"]) body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: 35vh;
+  pointer-events: none;
+  z-index: 100;
+  background: linear-gradient(to bottom, transparent, var(--crt-band), transparent);
+  transform: translateY(-100%);
+  animation: crt-band 9s linear infinite;
+}
+[data-effects="on"]:not([data-fx-off~="roll"]):not([data-fx-off~="scanlines"]) body::after {
+  animation: crt-crawl 1.5s steps(3) infinite; /* whole pixels, so the lines stay sharp */
+}
+/* transforms only: the browser composites these without repainting the page */
+@keyframes crt-crawl {
+  to {
+    transform: translateY(3px);
+  }
+}
+@keyframes crt-band {
+  to {
+    transform: translateY(100vh);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,9 +1,10 @@
 ---
 import { site } from '../site';
+import ExternalLink from './ExternalLink.astro';
 ---
 
 <footer class="mx-auto w-full max-w-[640px] px-4 pb-8 sm:px-6">
   <p class="label">
-    Built with Astro · hosted on Cloudflare · <a href={site.repo}>source</a>
+    Built with Astro · hosted on Cloudflare · <ExternalLink href={site.repo}>source</ExternalLink>
   </p>
 </footer>

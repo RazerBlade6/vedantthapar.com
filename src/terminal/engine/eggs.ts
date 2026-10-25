@@ -29,6 +29,7 @@ export const EGGS: Command[] = [
   // :q and friends — in the status-line prompt the ':' is already typed, so plain `q` is what arrives
   ...egg(['q', 'q!', 'wq', 'x', ':q', ':q!', ':wq'], (args, env) => exit.run(args, env)),
   ...egg(['echo'], (args) => ({ lines: [line(args.join(' '))] })),
+  ...egg(['glitch'], () => ({ lines: [], actions: [{ type: 'glitch' }] })),
   ...egg(['man'], (args) => {
     if (!args[0]) return { lines: [line('What manual page do you want?')] };
     const cmd = COMMANDS.find((c) => c.name === args[0].toLowerCase());

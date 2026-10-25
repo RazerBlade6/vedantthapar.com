@@ -263,7 +263,7 @@ test.describe('CRT effects', () => {
     await expect(page.locator('html')).toHaveAttribute('data-effects', 'off');
   });
 
-  test('the effects command switches them', async ({ page }) => {
+  test('effects on|off is the master switch', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('[data-fx]')).toBeVisible();
     await command(page, 'effects off');
@@ -277,5 +277,74 @@ test.describe('CRT effects', () => {
       await page.goto('/');
       await expect(page.locator('html')).toHaveAttribute('data-effects', 'off');
     });
+  });
+});
+
+test.describe('CRT effect parts', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('[data-fx]')).toBeVisible();
+  });
+
+  test('effects lists the parts; a part switches independently and is remembered', async ({ page }) => {
+    await command(page, 'effects');
+    for (const part of ['glow', 'scanlines', 'roll', 'glitch']) await expect(output(page)).toContainText(part);
+    await page.locator('[data-input]').fill('effects roll off');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('html')).toHaveAttribute('data-fx-off', 'roll');
+    expect(await page.evaluate(() => getComputedStyle(document.body, '::before').animationName)).toBe('none');
+    expect(await page.evaluate(() => getComputedStyle(document.body, '::after').content)).not.toBe('none'); // scanlines stay
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-fx-off', 'roll');
+    await expect(page.locator('html')).toHaveAttribute('data-effects', 'on');
+  });
+
+  test('roll animates the scanlines and the refresh band', async ({ page }) => {
+    expect(await page.evaluate(() => getComputedStyle(document.body, '::after').animationName)).toBe('crt-crawl');
+    expect(await page.evaluate(() => getComputedStyle(document.body, '::before').animationName)).toBe('crt-band');
+  });
+
+  test('glitch tears the content for a moment, and not when switched off', async ({ page }) => {
+    await command(page, 'glitch');
+    await expect(page.locator('main')).toHaveCSS('filter', /crt-glitch/);
+    await expect(page.locator('main')).not.toHaveCSS('filter', /crt-glitch/, { timeout: 2000 });
+  });
+
+  test.describe('reduced motion', () => {
+    test.use({ reducedMotion: 'reduce' });
+    test('roll and glitch never move, even when switched on', async ({ page }) => {
+      await command(page, 'effects on');
+      expect(await page.evaluate(() => getComputedStyle(document.body, '::before').animationName)).toBe('none');
+      await page.locator('[data-input]').fill('glitch');
+      await page.keyboard.press('Enter');
+      await expect(page.locator('main')).not.toHaveCSS('filter', /crt-glitch/);
+    });
+  });
+});
+
+test.describe('external links', () => {
+  test('open in a new tab and say so; email and in-site links do not', async ({ page }) => {
+    await page.goto('/');
+    for (const name of ['RazerBlade6', 'linkedin']) {
+      const link = page.locator('#main').getByRole('link', { name: new RegExp(`^${name}`) });
+      await expect(link).toHaveAttribute('target', '_blank');
+      await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+      await expect(link).toContainText('opens in a new tab'); // screen-reader text
+    }
+    await expect(page.locator('#main a[href^="mailto:"]').first()).not.toHaveAttribute('target', '_blank');
+    await expect(page.locator('#main a[href="/projects/apex"]')).not.toHaveAttribute('target', '_blank');
+  });
+
+  test('links inside write-ups do too', async ({ page }) => {
+    await page.goto('/projects/r-lox');
+    await expect(page.locator('article a[href="https://craftinginterpreters.com"]')).toHaveAttribute('target', '_blank');
+  });
+
+  test('links printed by the terminal do too', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('[data-fx]')).toBeVisible();
+    await command(page, 'contact');
+    await expect(output(page).locator('a[href="https://github.com/RazerBlade6"]')).toHaveAttribute('target', '_blank');
+    await expect(output(page).locator('a[href^="mailto:"]')).not.toHaveAttribute('target', '_blank');
   });
 });

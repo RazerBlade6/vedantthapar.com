@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import ExternalLink from '../../components/ExternalLink.astro';
 
 const archived = (await getCollection('projects', (p) => !p.data.featured)).sort(
   (a, b) => a.data.order - b.data.order,
@@ -24,7 +25,7 @@ const archived = (await getCollection('projects', (p) => !p.data.featured)).sort
           {(p.data.repo || p.data.status) && (
             <p class="label mt-1 flex gap-4">
               {p.data.status && <span>{p.data.status}</span>}
-              {p.data.repo && <a href={p.data.repo}>source</a>}
+              {p.data.repo && <ExternalLink href={p.data.repo}>source</ExternalLink>}
             </p>
           )}
         </li>

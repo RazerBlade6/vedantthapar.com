@@ -1,6 +1,6 @@
 # vedantthapar.com — Portfolio Plan
 
-Status: **v1.0.0 live** (M1–M4) · open: demo recordings, Cloudflare Web Analytics · Last updated: 2026-10-25
+Status: **v1.1.0 live** · open: demo recordings, Cloudflare Web Analytics · Last updated: 2026-10-25
 
 ---
 
@@ -350,6 +350,7 @@ portfolio/
 - Photo processing runs locally (`node scripts/process-photo.mjs <photo>`); only the outputs are committed, never the source photo. Re-run it when the photo changes; crops at the top of the script.
 - Favicon is a 3-tone posterized face on gruvbox yellow, not dithered: 1-bit dithering is noise at 32px.
 - Architecture diagrams stay as ASCII box drawings rather than SVG: they're on-brand, readable as text, and the same source renders in full-buffer mode.
+- CRT effects (post-v1): glow, scanlines, roll (crawl + refresh band) and glitch (an SVG-filter tear every 20–60 s), each switchable via `effects <part> on|off`, with the status-line fx button as the master switch. Roll and glitch never move under prefers-reduced-motion.
 - Waiting on Vedant: asciinema/GIF demo recordings (Demo placeholders remain), Cloudflare Web Analytics (dashboard toggle, no code).
 
 ### Later / maybe

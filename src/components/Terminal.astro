@@ -140,6 +140,22 @@ const chips = ['help', 'ls projects', 'open apex', 'contact', 'theme', 'term', .
     </div>
   </div>
 
+  <!-- CRT tear (ui/glitch.ts animates the band): the band of the source is shifted sideways and lit faintly, the rest stays put -->
+  <svg aria-hidden="true" width="0" height="0" class="absolute">
+    <filter id="crt-glitch" color-interpolation-filters="sRGB">
+      <feFlood data-band flood-color="#000" x="-10000" y="0" width="100000" height="0" result="band"></feFlood>
+      <feOffset in="SourceGraphic" dx="0" dy="0" result="shifted"></feOffset>
+      <feComposite in="shifted" in2="band" operator="in" result="slice"></feComposite>
+      <feComposite in="SourceGraphic" in2="band" operator="out" result="rest"></feComposite>
+      <feFlood data-band flood-color="#fff" flood-opacity="0.05" x="-10000" y="0" width="100000" height="0" result="sheen"></feFlood>
+      <feMerge>
+        <feMergeNode in="rest"></feMergeNode>
+        <feMergeNode in="slice"></feMergeNode>
+        <feMergeNode in="sheen"></feMergeNode>
+      </feMerge>
+    </filter>
+  </svg>
+
   <script type="application/json" data-vfs set:html={JSON.stringify(vfs).replace(/</g, '\\u003c')} />
 </div>
 

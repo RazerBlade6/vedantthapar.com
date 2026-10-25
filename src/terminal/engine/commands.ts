@@ -1,4 +1,4 @@
-import type { Action, Env, Line, Result, Seg, VNode } from './types';
+import { EFFECT_PARTS, type Action, type EffectPart, type Env, type Line, type Result, type Seg, type VNode } from './types';
 import { canonical, display, find, lookup, normalize } from './vfs';
 
 export interface Command {
@@ -151,15 +151,52 @@ const theme: Command = {
   },
 };
 
+const EFFECT_INFO: Record<EffectPart, string> = {
+  glow: 'phosphor glow on text',
+  scanlines: 'horizontal scanlines',
+  roll: 'scanlines crawl, a refresh band rolls down',
+  glitch: 'the occasional tear',
+};
+
 const effects: Command = {
   name: 'effects',
-  usage: 'effects [on|off]',
-  summary: 'toggle the CRT glow and scanlines',
+  usage: 'effects [part] [on|off]',
+  summary: 'CRT effects: list them, or switch all / one',
   run(args, env) {
-    const arg = args[0]?.toLowerCase();
-    if (arg && arg !== 'on' && arg !== 'off') return err(`effects: ${args[0]}: expected on or off`);
-    const on = arg ? arg === 'on' : !env.effects;
-    return { lines: [say({ text: `effects ${on ? 'on' : 'off'}`, tone: 'muted' })], actions: [{ type: 'effects', on }] };
+    const [a, b] = args.map((x) => x.toLowerCase());
+    const isSwitch = (x?: string) => x === 'on' || x === 'off';
+
+    // `effects` — show what's on
+    if (!a) {
+      const state = (on: boolean) => ({ text: on ? 'on ' : 'off', tone: on ? ('accent' as const) : ('muted' as const) });
+      return {
+        lines: [
+          [{ text: 'effects'.padEnd(14) }, state(env.effects.on)],
+          ...EFFECT_PARTS.map((p): Line => [
+            { text: `  ${p}`.padEnd(14), cmd: `effects ${p}` },
+            state(env.effects.on && !env.effects.off.includes(p)),
+            { text: `  ${EFFECT_INFO[p]}`, tone: 'muted' },
+          ]),
+          [],
+          say({ text: 'effects on|off switches everything; effects <part> [on|off] switches one', tone: 'muted' }),
+        ],
+      };
+    }
+
+    // `effects on|off` — the master switch
+    if (isSwitch(a) && !b) {
+      return { lines: [say({ text: `effects ${a}`, tone: 'muted' })], actions: [{ type: 'effects', on: a === 'on' }] };
+    }
+
+    // `effects <part> [on|off]` — one part; bare toggles it
+    if (!(EFFECT_PARTS as readonly string[]).includes(a)) return err(`effects: ${args[0]}: expected on, off or one of ${EFFECT_PARTS.join(', ')}`);
+    if (b && !isSwitch(b)) return err(`effects: ${args[1]}: expected on or off`);
+    const part = a as EffectPart;
+    const on = b ? b === 'on' : env.effects.off.includes(part);
+    const actions: Action[] = [{ type: 'effects', on, part }];
+    // switching a part on while everything is off would do nothing visible, so turn the master on too
+    if (on && !env.effects.on) actions.unshift({ type: 'effects', on: true });
+    return { lines: [say({ text: `${part} ${on ? 'on' : 'off'}`, tone: 'muted' })], actions };
   },
 };
 

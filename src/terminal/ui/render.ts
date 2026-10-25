@@ -1,5 +1,8 @@
 import type { Line } from '../engine';
 
+/** Another site (http/https on a different host); mailto: and in-site links open in place. */
+const isExternal = (href: string) => /^https?:/i.test(href) && new URL(href).host !== location.host;
+
 const TONES = {
   muted: 'text-fg-muted',
   accent: 'text-accent',
@@ -17,8 +20,14 @@ export function renderLine(line: Line, run: (cmd: string) => void): HTMLElement 
   for (const seg of line) {
     let node: HTMLElement;
     if (seg.href) {
-      node = document.createElement('a');
-      (node as HTMLAnchorElement).href = seg.href;
+      const a = document.createElement('a');
+      a.href = seg.href;
+      if (isExternal(seg.href)) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.setAttribute('aria-label', `${seg.text} (opens in a new tab)`);
+      }
+      node = a;
     } else if (seg.cmd) {
       const cmd = seg.cmd;
       node = document.createElement('button');
