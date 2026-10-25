@@ -42,8 +42,8 @@ const { status } = site;
     </div>
   </section>
 
-  <section aria-labelledby="work" class="mt-20">
-    <SectionHeading id="work" command="ls ./work" label="Selected work" />
+  <section aria-labelledby="projects" class="mt-20">
+    <SectionHeading id="projects" command="ls ./projects" label="Selected projects" />
     <ul class="border-b border-border">
       {
         featured.map((p) => (
@@ -61,7 +61,7 @@ const { status } = site;
       }
     </ul>
     <p class="label mt-4">
-      <a href="/projects/archive">ls -a ./work/archive</a> — NovaRV (RISC-V CPU), ScholaRAG, RotiOS
+      <a href="/projects/archive">ls ./projects/archive</a> — NovaRV (RISC-V CPU), ScholaRAG, RotiOS
     </p>
   </section>
 

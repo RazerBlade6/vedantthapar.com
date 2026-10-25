@@ -1,0 +1,95 @@
+---
+import { buildVfs } from '../terminal/vfs.build';
+import { site } from '../site';
+
+interface Props {
+  file: string;
+}
+const { file } = Astro.props;
+const vfs = await buildVfs();
+const chips = ['help', 'ls projects', 'open apex', 'contact', 'theme', ...(site.resume ? ['resume'] : [])];
+---
+
+<!-- Status line + command line. Persisted across page navigations so history and output survive. -->
+<div id="terminal" transition:persist class="sticky bottom-0 z-40 font-mono text-xs">
+  <section
+    data-panel
+    hidden
+    aria-label="Terminal"
+    class="max-h-[min(60dvh,32rem)] overflow-y-auto border-t border-border bg-bg-alt text-sm"
+  >
+    <div class="flex justify-end px-2 pt-1">
+      <button
+        type="button"
+        data-close
+        aria-label="Close terminal"
+        class="flex size-11 cursor-pointer items-center justify-center text-fg-muted hover:text-fg-strong">✕</button
+      >
+    </div>
+    <div data-output aria-live="polite" class="flex flex-col px-4 leading-6 break-words whitespace-pre-wrap"></div>
+    <div data-chips class="flex flex-wrap gap-2 px-4 pt-2 pb-4">
+      {
+        chips.map((c) => (
+          <button
+            type="button"
+            data-chip={c}
+            class="min-h-11 cursor-pointer rounded-md border border-border px-3 text-fg hover:border-link hover:text-link"
+          >
+            {c}
+          </button>
+        ))
+      }
+    </div>
+  </section>
+
+  <div class="flex min-h-11 items-stretch justify-between gap-2 border-t border-border bg-bg-alt text-fg-muted">
+    <div class="flex min-w-0 flex-1 items-center gap-3">
+      <span data-mode class="flex items-center self-stretch bg-accent px-2.5 font-medium text-accent-fg">NORMAL</span>
+      <button
+        type="button"
+        data-open
+        disabled
+        class="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 text-left disabled:cursor-default"
+      >
+        <span data-file class="truncate">{file}</span>
+        <span data-hint hidden class="hidden truncate text-fg-muted sm:inline">
+          · press <kbd class="text-fg-strong">:</kbd> for commands, <kbd class="text-fg-strong">?</kbd> for help
+        </span>
+        <span data-hint hidden class="truncate text-fg-muted sm:hidden">· tap for commands</span>
+      </button>
+      <form data-form hidden class="flex min-w-0 flex-1 items-center gap-1">
+        <span data-prompt aria-hidden="true" class="text-fg-strong">:</span>
+        <label for="term-input" class="sr-only">Command</label>
+        <input
+          id="term-input"
+          data-input
+          type="text"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          enterkeyhint="go"
+          class="min-h-11 min-w-0 flex-1 bg-transparent text-base text-fg-strong outline-none sm:text-xs"
+        />
+      </form>
+    </div>
+    <div class="flex items-center pr-2">
+      <button
+        type="button"
+        data-theme-cycle
+        hidden
+        class="flex min-h-11 cursor-pointer items-center gap-1.5 px-2 hover:text-fg-strong"
+      >
+        <span aria-hidden="true">theme:</span>
+        <span data-theme-label class="text-fg-strong"></span>
+      </button>
+    </div>
+  </div>
+
+  <script type="application/json" data-vfs set:html={JSON.stringify(vfs).replace(/</g, '\\u003c')} />
+</div>
+
+<script>
+  import { mountTerminal } from '../terminal/ui/terminal';
+  mountTerminal();
+</script>

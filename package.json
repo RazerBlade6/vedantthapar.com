@@ -8,7 +8,9 @@
     "build": "astro build",
     "preview": "wrangler dev",
     "check": "astro check",
-    "deploy": "astro build && wrangler deploy"
+    "deploy": "astro build && wrangler deploy",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.1",
@@ -22,7 +24,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@playwright/test": "^1.64.1",
     "typescript": "^6.0.3",
+    "vitest": "^5.0.5",
     "wrangler": "^4.152.0"
   },
   "allowScripts": {

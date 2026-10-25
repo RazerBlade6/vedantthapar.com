@@ -8,14 +8,14 @@ const archived = (await getCollection('projects', (p) => !p.data.featured)).sort
 ---
 
 <Base title="Archive" description="Other projects by Vedant Thapar." file="~/projects/archive/">
-  <p class="label mb-8"><a href="/#work">cd ..</a></p>
+  <p class="label mb-8"><a href="/#projects">cd ..</a></p>
   <h1 class="text-3xl font-semibold tracking-tight text-fg-strong">Archive</h1>
   <p class="mt-4 leading-relaxed">Smaller, older or unfinished — but each taught me something.</p>
 
   <ul class="mt-10 border-b border-border">
     {
       archived.map((p) => (
-        <li class="flex flex-col gap-1 border-t border-border py-5">
+        <li id={p.id} class="flex scroll-mt-8 flex-col gap-1 border-t border-border py-5">
           <div class="flex flex-wrap items-baseline justify-between gap-x-4">
             <h2 class="font-medium text-fg-strong">{p.data.title}</h2>
             <span class="label">{p.data.stack.join(' · ')}</span>

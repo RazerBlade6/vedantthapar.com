@@ -1,6 +1,6 @@
 # vedantthapar.com — Portfolio Plan
 
-Status: **M1 live at vedantthapar.com** (resume PDF + www DNS record pending) · Last updated: 2026-10-25
+Status: **M1 + M2 live** (resume PDF pending) · Last updated: 2026-10-25
 
 ---
 
@@ -26,7 +26,7 @@ Status: **M1 live at vedantthapar.com** (resume PDF + www DNS record pending) ·
 
 | Route | Content |
 |---|---|
-| `/` | Single page: hero → selected work → experience → about → contact |
+| `/` | Single page: hero → projects → experience → about → contact |
 | `/projects/apex` | Flagship project page |
 | `/projects/sqlsense` | Flagship project page |
 | `/projects/r-lox` | Flagship project page |
@@ -38,7 +38,7 @@ Status: **M1 live at vedantthapar.com** (resume PDF + www DNS record pending) ·
 ### Home page sections
 
 1. **Hero:** `whoami` prompt, name (Departure Mono), one-liner, status line, CTAs: **Resume** and **Email**.
-2. **Work (`ls ./work`):** 3 flagship rows (name, stack, one-line description) linking to project pages, plus an "archive" link.
+2. **Projects (`ls ./projects`):** 3 flagship rows (name, stack, one-line description) linking to project pages, plus an "archive" link.
 3. **Experience (`cat experience.log`):** compact timeline.
    - **1Kosmos** (R&D Intern, Aug 2026–) and **Mondelez** (Strategy Intern, Aug 2025–Jan 2026): expanded, 2–3 lines each.
    - **Kosha Yoga** (Web & SEO, Jun–Aug 2025) and **Underscore** (Cybersecurity, May–Aug 2024): one line each.
@@ -69,7 +69,7 @@ Reference mockups (private canvas): https://claude.ai/artifact/39PLE2zCKc3BhUsHv
 ### Principles
 
 - Narrow single column (~640px max content width), lots of whitespace, typography-led.
-- Terminal flavour through **details**: section labels as shell commands (`ls ./work`), a vim-style status line pinned to the bottom (`NORMAL  ~/index.md  …  theme: gruvbox`), a block cursor.
+- Terminal flavour through **details**: section labels as shell commands (`ls ./projects`), a vim-style status line pinned to the bottom (`NORMAL  ~/index.md  …  theme: gruvbox`), a block cursor.
 - **Mostly static.** Hover states and a View Transition fade only. Richer motion is a possible later phase.
 - Retro comes from typography, the status line and the cursor, not from any one color, so it survives every theme.
 

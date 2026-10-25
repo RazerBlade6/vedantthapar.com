@@ -9,3 +9,5 @@ dist/
 # Resume PDFs contain phone numbers — kept out of the public repo until a phone-less version exists
 /Vedant_Thapar_Resume.pdf
 /public/resume.pdf
+test-results/
+playwright-report/

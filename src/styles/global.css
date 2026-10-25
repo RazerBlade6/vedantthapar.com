@@ -52,6 +52,11 @@
   a:hover {
     @apply text-link decoration-link;
   }
+  /* keep focused/targeted items clear of the sticky status line */
+  main :focus,
+  main :target {
+    scroll-margin-block: 5rem;
+  }
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
