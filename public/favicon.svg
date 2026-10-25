@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Placeholder until the dithered photo favicon (PLAN.md M4) -->
+  <rect width="32" height="32" rx="4" fill="#282828"/>
+  <path d="M7 10l6 6-6 6" fill="none" stroke="#fabd2f" stroke-width="3" stroke-linecap="square"/>
+  <rect x="16" y="20" width="9" height="3" fill="#ebdbb2"/>
+</svg>

@@ -1,0 +1,100 @@
+/*
+ * Theme tokens. Themes change colors only — type and layout are shared.
+ * Every text/background pairing passes WCAG AA (4.5:1) against both --bg and --bg-alt.
+ *
+ * No data-theme attribute (JS disabled): gruvbox, or paper when the system is light.
+ * With JS, the pre-paint script in Base.astro sets data-theme from storage or the system.
+ */
+
+:root,
+[data-theme="gruvbox"] {
+  --scheme: dark;
+  --bg: #282828;
+  --bg-alt: #1d2021;
+  --border: #3c3836;
+  --fg: #ebdbb2;
+  --fg-strong: #fbf1c7;
+  --fg-muted: #a89984;
+  --accent: #fabd2f;
+  --accent-fg: #282828;
+  --link: #83a598;
+  --selection: #504945;
+  --glow: 0;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --scheme: light;
+    --bg: #f4efe4;
+    --bg-alt: #ebe4d4;
+    --border: #d8cfbc;
+    --fg: #2b2620;
+    --fg-strong: #15120e;
+    --fg-muted: #6b6256;
+    --accent: #9c4a1a;
+    --accent-fg: #f4efe4;
+    --link: #1f4e79;
+    --selection: #e3d5b8;
+    --glow: 0;
+  }
+}
+
+[data-theme="paper"] {
+  --scheme: light;
+  --bg: #f4efe4;
+  --bg-alt: #ebe4d4;
+  --border: #d8cfbc;
+  --fg: #2b2620;
+  --fg-strong: #15120e;
+  --fg-muted: #6b6256;
+  --accent: #9c4a1a;
+  --accent-fg: #f4efe4;
+  --link: #1f4e79;
+  --selection: #e3d5b8;
+  --glow: 0;
+}
+
+[data-theme="phosphor"] {
+  --scheme: dark;
+  --bg: #0b0d0b;
+  --bg-alt: #111511;
+  --border: #1f2a20;
+  --fg: #c9d1c7;
+  --fg-strong: #e8f5e9;
+  --fg-muted: #8a9888;
+  --accent: #5cf08a;
+  --accent-fg: #0b0d0b;
+  --link: #5cf08a;
+  --selection: #1d3b26;
+  --glow: 0.3;
+}
+
+[data-theme="mocha"] {
+  --scheme: dark;
+  --bg: #1e1e2e;
+  --bg-alt: #181825;
+  --border: #313244;
+  --fg: #bac2de;
+  --fg-strong: #cdd6f4;
+  --fg-muted: #9399b2;
+  --accent: #cba6f7;
+  --accent-fg: #1e1e2e;
+  --link: #89b4fa;
+  --selection: #45475a;
+  --glow: 0;
+}
+
+[data-theme="latte"] {
+  --scheme: light;
+  --bg: #eff1f5;
+  --bg-alt: #e6e9ef;
+  --border: #ccd0da;
+  --fg: #4c4f69;
+  --fg-strong: #303347;
+  --fg-muted: #5c5f77;
+  --accent: #7528d6;
+  --accent-fg: #eff1f5;
+  --link: #1655d4;
+  --selection: #ccd0da;
+  --glow: 0;
+}

@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import StatusLine from '../components/StatusLine.astro';
+import Footer from '../components/Footer.astro';
+import { site, THEMES } from '../site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Path shown in the status line, e.g. "~/projects/apex.md" */
+  file: string;
+}
+
+const { title, description = site.description, file } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — AI engineer`;
+const canonical = new URL(Astro.url.pathname, site.url);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preload" href="/fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Pre-paint theme: stored choice, else system preference. Re-applied after client-side navigation. -->
+    <script is:inline define:vars={{ themes: THEMES }}>
+      (function () {
+        var light = matchMedia('(prefers-color-scheme: light)');
+        function pick() {
+          var t;
+          // ?theme=<name> picks (and remembers) a theme — handy for sharing a specific look
+          var q = new URLSearchParams(location.search).get('theme');
+          try {
+            if (themes.indexOf(q) >= 0) localStorage.setItem('theme', q);
+            t = localStorage.getItem('theme');
+          } catch (e) {
+            t = q;
+          }
+          return themes.indexOf(t) >= 0 ? t : light.matches ? 'paper' : 'gruvbox';
+        }
+        function apply() { document.documentElement.dataset.theme = pick(); }
+        apply();
+        if (!window.__themeBound) {
+          window.__themeBound = true;
+          document.addEventListener('astro:after-swap', apply);
+          light.addEventListener('change', apply);
+        }
+      })();
+    </script>
+    <ClientRouter />
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:bg-bg-alt focus:px-3 focus:py-2"
+      >Skip to content</a
+    >
+    <main id="main" class="mx-auto w-full max-w-[640px] flex-1 px-4 pt-20 pb-16 sm:px-6 sm:pt-28">
+      <slot />
+    </main>
+    <Footer />
+    <StatusLine file={file} />
+  </body>
+</html>

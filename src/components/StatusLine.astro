@@ -1,0 +1,56 @@
+---
+interface Props {
+  file: string;
+}
+const { file } = Astro.props;
+---
+
+<div
+  class="sticky bottom-0 z-40 flex min-h-11 items-stretch justify-between gap-4 border-t border-border bg-bg-alt font-mono text-xs text-fg-muted"
+>
+  <div class="flex min-w-0 items-center gap-3">
+    <span class="flex items-center self-stretch bg-accent px-2.5 font-medium text-accent-fg">NORMAL</span>
+    <span class="truncate">{file}</span>
+  </div>
+  <div class="flex items-center pr-2">
+    <button
+      type="button"
+      data-theme-cycle
+      hidden
+      class="flex min-h-11 cursor-pointer items-center gap-1.5 px-2 hover:text-fg-strong"
+    >
+      <span aria-hidden="true">theme:</span>
+      <span data-theme-label class="text-fg-strong"></span>
+    </button>
+  </div>
+</div>
+
+<script>
+  import { THEMES, type Theme } from '../site';
+
+  function setup() {
+    const btn = document.querySelector<HTMLButtonElement>('[data-theme-cycle]');
+    const label = btn?.querySelector<HTMLElement>('[data-theme-label]');
+    if (!btn || !label) return;
+
+    const render = () => {
+      const current = document.documentElement.dataset.theme ?? 'gruvbox';
+      label.textContent = current;
+      btn.setAttribute('aria-label', `Theme: ${current}. Switch theme`);
+    };
+
+    btn.hidden = false;
+    render();
+    btn.onclick = () => {
+      const current = document.documentElement.dataset.theme as Theme;
+      const next = THEMES[(THEMES.indexOf(current) + 1) % THEMES.length];
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem('theme', next);
+      } catch {}
+      render();
+    };
+  }
+
+  document.addEventListener('astro:page-load', setup);
+</script>

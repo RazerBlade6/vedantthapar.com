@@ -1,0 +1,123 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import { site } from '../site';
+
+const featured = (await getCollection('projects', (p) => p.data.featured)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const experience = (await getCollection('experience')).sort((a, b) => a.data.order - b.data.order);
+const { status } = site;
+---
+
+<Base file="~/index.md">
+  <section aria-labelledby="hero-name" class="flex flex-col gap-5">
+    <p class="label text-accent" aria-hidden="true">
+      ~/vedant $ whoami<span class="cursor-block ml-1"></span>
+    </p>
+    <h1 id="hero-name" class="font-pixel text-4xl leading-none text-fg-strong sm:text-5xl">{site.name}</h1>
+    <p class="text-lg leading-relaxed">{site.tagline}</p>
+    <ul class="label flex flex-wrap gap-x-5 gap-y-1">
+      <li><span class="text-accent" aria-hidden="true">●</span> {status.role} — {status.doing}</li>
+      <li>{status.location}</li>
+      <li>{status.availability}</li>
+    </ul>
+    <div class="mt-1 flex flex-wrap gap-3">
+      <a
+        href={site.resume}
+        class="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm no-underline hover:border-link"
+        >Resume <span aria-hidden="true">&nbsp;↓</span></a
+      >
+      <a
+        href={`mailto:${site.email}`}
+        class="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm no-underline hover:border-link"
+        >Email</a
+      >
+    </div>
+  </section>
+
+  <section aria-labelledby="work" class="mt-20">
+    <SectionHeading id="work" command="ls ./work" label="Selected work" />
+    <ul class="border-b border-border">
+      {
+        featured.map((p) => (
+          <li class="border-t border-border">
+            <a
+              href={`/projects/${p.id}`}
+              class="group grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 py-4 no-underline"
+            >
+              <span class="font-medium text-fg-strong group-hover:text-link">{p.data.title}</span>
+              <span class="label self-center">{p.data.stack.slice(0, 2).join(' · ')}</span>
+              <span class="col-span-2 text-sm leading-relaxed text-fg">{p.data.summary}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="label mt-4">
+      <a href="/projects/archive">ls -a ./work/archive</a> — NovaRV (RISC-V CPU), ScholaRAG, RotiOS
+    </p>
+  </section>
+
+  <section aria-labelledby="experience" class="mt-20">
+    <SectionHeading id="experience" command="cat experience.log" label="Experience" />
+    <ol class="flex flex-col gap-6">
+      {
+        experience.map((e) => (
+          <li class="grid gap-x-4 gap-y-1 sm:grid-cols-[9.5rem_minmax(0,1fr)]">
+            <span class="label pt-0.5">
+              {e.data.start} – {e.data.end ?? 'now'}
+            </span>
+            <div>
+              <p class="text-fg-strong">
+                {e.data.role}, <span class="text-fg">{e.data.company}</span>
+              </p>
+              <ul class:list={['mt-1 flex flex-col gap-1 text-sm leading-relaxed', !e.data.expanded && 'text-fg-muted']}>
+                {(e.data.expanded ? e.data.bullets : e.data.bullets.slice(0, 1)).map((b) => (
+                  <li>{b}</li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section aria-labelledby="about" class="mt-20">
+    <SectionHeading id="about" command="cat about.txt" label="About" />
+    <!-- TODO(vedant): dithered photo goes here once supplied (PLAN.md M4) -->
+    <div class="flex flex-col gap-4 leading-relaxed">
+      <p>
+        I'm a Computer Science graduate from BITS Pilani, Dubai (2026), now doing R&D at 1Kosmos in New Delhi, where I
+        build the infrastructure their agents run on.
+      </p>
+      <p>
+        Most of my work is AI engineering — agents, RAG, MCP tooling — but I keep getting pulled down the stack. I've
+        written an interpreter in Rust, a pipelined RISC-V CPU in SystemVerilog, and I'm slowly writing a kernel in
+        assembly. I think the best agent systems are built by people who understand what's underneath them.
+      </p>
+    </div>
+  </section>
+
+  <section aria-labelledby="contact" class="mt-20">
+    <SectionHeading id="contact" command="cat contact" label="Contact" />
+    <p class="mb-4 leading-relaxed">
+      I'm looking for full-time roles from 2026 — India or remote. The fastest way to reach me is email.
+    </p>
+    <ul class="flex flex-col gap-2 font-mono text-sm">
+      <li><span class="label inline-block w-20">email</span><a href={`mailto:${site.email}`}>{site.email}</a></li>
+      <li><span class="label inline-block w-20">github</span><a href={site.github}>RazerBlade6</a></li>
+      {
+        site.linkedin && (
+          <li>
+            <span class="label inline-block w-20">linkedin</span>
+            <a href={site.linkedin}>linkedin</a>
+          </li>
+        )
+      }
+      <li><span class="label inline-block w-20">resume</span><a href={site.resume}>resume.pdf</a></li>
+    </ul>
+  </section>
+</Base>

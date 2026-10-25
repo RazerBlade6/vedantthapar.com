@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.astro/
+.wrangler/
+.env
+.env.*
+.DS_Store
+
+# Resume PDFs contain phone numbers — kept out of the public repo until a phone-less version exists
+/Vedant_Thapar_Resume.pdf
+/public/resume.pdf

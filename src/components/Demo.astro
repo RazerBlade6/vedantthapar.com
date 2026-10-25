@@ -1,0 +1,17 @@
+---
+/** Placeholder until real recordings land (PLAN.md M4). */
+interface Props {
+  kind: 'asciinema' | 'gif';
+  caption: string;
+}
+const { kind, caption } = Astro.props;
+---
+
+<figure class="not-prose my-8">
+  <div
+    class="flex aspect-[16/9] items-center justify-center rounded-md border border-dashed border-border bg-bg-alt font-mono text-xs text-fg-muted"
+  >
+    [{kind === 'asciinema' ? 'asciinema recording' : 'demo'} — coming soon]
+  </div>
+  <figcaption class="label mt-2">{caption}</figcaption>
+</figure>

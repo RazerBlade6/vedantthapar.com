@@ -1,0 +1,43 @@
+- id: 1kosmos
+  order: 1
+  role: R&D Intern
+  company: 1Kosmos
+  location: New Delhi
+  start: Aug 2026
+  expanded: true
+  bullets:
+    - Building an agent control plane in Python and LangChain — one place to create, orchestrate and manage the lifecycle of the company's agents.
+    - Designing the SaaS APIs (Node.js, Python) that standardise how agents interact across the internal agentic services platform.
+
+- id: mondelez
+  order: 2
+  role: Strategy Intern
+  company: Mondelez International
+  location: Dubai
+  start: Aug 2025
+  end: Jan 2026
+  expanded: true
+  bullets:
+    - Built automated pipelines moving legacy Sales and RTM reporting into GCP analytics on BigQuery and Spark.
+    - Wrote the scraping and processing for NielsenIQ product data that fed internal reporting.
+    - Worked with the Global Head of Digital Services on AI validation for spotting counterfeit products on retail shelves.
+
+- id: kosha-yoga
+  order: 3
+  role: Web & SEO Intern
+  company: Innotek — Kosha Yoga
+  location: Mumbai
+  start: Jun 2025
+  end: Aug 2025
+  bullets:
+    - Ran the company site end to end — hosting, DNS, technical SEO (+30% organic traffic) and a support chatbot.
+
+- id: underscore
+  order: 4
+  role: Cybersecurity Intern
+  company: Underscore Cybersecurity
+  location: New Delhi
+  start: May 2024
+  end: Aug 2024
+  bullets:
+    - Built F-Detector, a Fourier-transform network analyser for spotting bot-like traffic (+30% detection accuracy).

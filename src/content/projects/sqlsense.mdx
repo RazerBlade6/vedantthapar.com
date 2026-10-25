@@ -1,0 +1,52 @@
+---
+title: SQLSense
+summary: Ask questions of a database in plain English and get back safe, read-only SQL — now growing into a multi-agent analytics assistant on AWS.
+stack: [Python, FastAPI, LangGraph, sqlglot, MCP, Next.js, PostgreSQL]
+repo: https://github.com/RazerBlade6/sqlsense
+status: v1 working · v2 in progress
+featured: true
+order: 2
+---
+
+import Demo from '../../components/Demo.astro';
+
+<Demo kind="gif" caption="question → generated SQL → result and chart" />
+
+## The problem
+
+Most questions business people ask of a database are answerable with one SQL query — they just can't write it. Text-to-SQL demos are easy; text-to-SQL you'd let near a real database is not. The model has to know the schema, recover when a query fails, and never, under any prompt, be able to write.
+
+## Architecture
+
+```text
+ Next.js + Recharts UI
+          │
+   FastAPI  /query  /schema          MCP server (same agent, as a tool)
+          │                                   │
+          └──────────────┬────────────────────┘
+                         ▼
+     LangGraph:  generate ──► validate ──► execute ──► answer
+                    ▲            │ sqlglot      │
+                    └── retry ◄──┴── error ◄────┘
+                         │
+             PostgreSQL (read-only role)
+```
+
+v1 is a LangGraph loop: generate SQL from the question and the introspected schema, validate it, execute it, and on any error feed the error back into generation and retry. The same agent is exposed over MCP, so other assistants can call it as a tool.
+
+## Key decisions
+
+**Parse, don't pattern-match.** Every generated query goes through `sqlglot` before it touches the database. The safety layer checks the parsed tree — statement type, blocked functions — rather than grepping strings, which is how most "read-only" text-to-SQL tools get bypassed. A read-only database role sits underneath as a second, independent guard.
+
+**Errors are input, not failure.** A bad column name or type mismatch is information the model can use. Feeding the database's own error back into the next generation step fixes most first-attempt failures without the user ever seeing them.
+
+**Keep the pattern, swap the parts (v2).** v2 turns SQLSense into a multi-agent assistant over a retail data warehouse: a planner routes each question to SQL, document retrieval or both; the SQL agent writes Athena SQL over an S3 Parquet lake; a retrieval agent searches metric definitions and campaign docs with pgvector; a data-quality agent checks each pipeline refresh. The v1 generate → validate → execute → retry loop survives intact as the SQL agent's subgraph.
+
+**A `Warehouse` interface with two backends.** Athena in the cloud, DuckDB locally, over the same Parquet files — so unit tests and local development run offline for free, and the real Athena + Bedrock evals run in CI.
+
+## What I'd do differently
+
+{/* DRAFT — Vedant to review */}
+
+- **Start the eval suite on day one.** v1 was tested on safety, but answer quality was judged by eye. v2 makes evals the first thing built, and I'd do that for any agent project now.
+- **Introspect less, describe more.** Raw schema introspection gives the model column names but not meaning. v2 replaces it with a catalog carrying a real data dictionary, which is what actually improves query quality.

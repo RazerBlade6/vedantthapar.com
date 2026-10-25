@@ -1,0 +1,72 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const featured = (await getCollection('projects', (p) => p.data.featured)).sort(
+    (a, b) => a.data.order - b.data.order,
+  );
+  return featured.map((project, i) => ({
+    params: { slug: project.id },
+    props: {
+      project,
+      prev: featured[i - 1],
+      next: featured[i + 1],
+    },
+  }));
+}
+
+const { project, prev, next } = Astro.props;
+const { Content } = await render(project);
+const { title, summary, stack, repo, live, status } = project.data;
+---
+
+<Base title={title} description={summary} file={`~/projects/${project.id}.md`}>
+  <p class="label mb-8"><a href="/#work">cd ..</a></p>
+
+  <header class="flex flex-col gap-4">
+    <h1 class="text-3xl font-semibold tracking-tight text-fg-strong">{title}</h1>
+    <p class="text-lg leading-relaxed">{summary}</p>
+    <dl class="label grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-3 gap-y-1">
+      {
+        status && (
+          <>
+            <dt>status</dt>
+            <dd class="text-fg">{status}</dd>
+          </>
+        )
+      }
+      <dt>stack</dt>
+      <dd class="text-fg">{stack.join(' · ')}</dd>
+      {
+        repo && (
+          <>
+            <dt>source</dt>
+            <dd>
+              <a href={repo}>{repo.replace('https://', '')}</a>
+            </dd>
+          </>
+        )
+      }
+      {
+        live && (
+          <>
+            <dt>live</dt>
+            <dd>
+              <a href={live}>{live.replace('https://', '')}</a>
+            </dd>
+          </>
+        )
+      }
+    </dl>
+  </header>
+
+  <article class="prose prose-themed mt-10 max-w-none prose-headings:font-semibold prose-h2:mt-12 prose-h2:text-xl prose-pre:text-[0.78rem] prose-pre:leading-snug prose-code:font-normal prose-code:before:content-none prose-code:after:content-none">
+    <Content />
+  </article>
+
+  <nav aria-label="More projects" class="label mt-16 flex justify-between gap-4 border-t border-border pt-6">
+    {prev ? <a href={`/projects/${prev.id}`}>← {prev.data.title}</a> : <span />}
+    {next ? <a href={`/projects/${next.id}`}>{next.data.title} →</a> : <a href="/projects/archive">archive →</a>}
+  </nav>
+</Base>

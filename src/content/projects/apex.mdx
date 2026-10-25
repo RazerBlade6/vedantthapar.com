@@ -1,0 +1,65 @@
+---
+title: Apex
+summary: A terminal hub that models me and my whole portfolio, proposes what to work on next, and dispatches the implementation to a coding agent.
+stack: [Go, SQLite, Bubble Tea, Anthropic API, OpenAI API, Claude Code]
+repo: https://github.com/RazerBlade6/apex
+status: v1.2 · active
+featured: true
+order: 1
+---
+
+import Demo from '../../components/Demo.astro';
+
+<Demo kind="asciinema" caption="apex — chat, items and projects views" />
+
+## The problem
+
+I have more projects than attention. Every coding assistant I tried knew one repository at a time, and none of them knew *me* — what I'm good at, what I'm trying to learn, which projects are stuck and why. Choosing what to work on next was the expensive decision, and nothing helped with it.
+
+Apex keeps a persistent model of both: my profile and skills, and every project I own. It reasons across all of them at once to propose action items and new projects, then hands the actual coding to an agent.
+
+## Architecture
+
+The whole design is a split between two loops.
+
+```text
+ PROFILE.md · SKILLS.md · PROJECTS.md     per project: notes,
+                 │                        README, git history
+                 └──────────────┬───────────────┘
+                                ▼
+┌─ advisor loop · Apex owns it ─────────────────────────────┐
+│ digests ──► provider ──► action items · project ideas     │
+│ (hash-     Anthropic                   │                  │
+│ cached)    OpenAI                      ▼                  │
+│            claude-cli                SQLite               │
+└───────────────────────────────┬───────────────────────────┘
+                                │ brief + context
+                                ▼
+┌─ builder loop · dispatched ───────────────────────────────┐
+│ Executor interface ──► Claude Code in the project dir     │
+│ flock per project · streamed events ──► Bubble Tea TUI    │
+└───────────────────────────────────────────────────────────┘
+```
+
+- **The advisor loop** reads context and produces text: action items, project ideas, critiques, plans. That's where Apex's value lives.
+- **The builder loop** writes code — and Apex deliberately doesn't implement it. It assembles a brief and dispatches to Claude Code running in the project directory, behind a Go interface so a native executor can be swapped in later.
+
+## Key decisions
+
+**Don't build the builder.** Tool-use plumbing, permission prompts, diff review and context management are already solved by existing agents. Rebuilding them would have eaten most of the project and produced something worse. Dispatching also keeps Apex's provider interface tiny: it only needs streaming text and structured output, so Go's awkward sum types never leak into the core.
+
+**Digests, not repositories.** Instead of reading whole repos, Apex keeps a few hundred tokens per project, synthesised from notes, the README and recent git history. Each digest is cached against a hash of the content *and* git state and regenerated only when something changes. Ten digests fit comfortably in one context window; ten repositories don't. That's what makes cross-portfolio reasoning tractable at all.
+
+**One provider interface, three backends.** Anthropic, OpenAI, and subscription-backed inference through the Claude Code CLI all sit behind one interface that normalises streaming and schema-constrained output. Apex runs on your own API key, or on a Claude subscription with no key at all.
+
+**Locks where the resource lives.** Shared state (the schema) is locked with a compare-and-swap row in the database; machine-local state (a project's working tree, the local replica) is locked with `flock(2)`, which the kernel releases if the process dies — no stale-lock detection, no timeouts. A lock file records the holder, so a collision says *what* is running and how to watch or stop it, instead of just "locked".
+
+**Pure Go, no cgo.** `modernc.org/sqlite` over the usual cgo drivers keeps Apex a single static binary that cross-compiles from any host. Migrations are forward-only and additive. The 271-test suite runs entirely offline — no API calls, no cost.
+
+## What I'd do differently
+
+{/* DRAFT — Vedant to review: these are inferred from DESIGN.md and PROJECT.md */}
+
+- **Pick the language for the audience, not just the problem.** Go was right for the binary and the Charm ecosystem, but most of the agent tooling I work with day to day is Python. I'd still choose Go — but I'd decide that deliberately rather than by default.
+- **Design the action-item schema with a type from the start.** "What kind of change is this?" (bugfix, feature, refactor) turned out to matter in the UI, and adding it later means a migration plus an advisor prompt change.
+- **Draw the mockups before the TUI, not after.** The chat and items views were rebuilt to match hand-drawn mockups; starting from them would have saved a round of layout work.

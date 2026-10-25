@@ -1,0 +1,14 @@
+---
+/** A section heading styled as a shell command; screen readers get the plain label. */
+interface Props {
+  command: string;
+  label: string;
+  id?: string;
+}
+const { command, label, id } = Astro.props;
+---
+
+<h2 id={id} class="label mb-4">
+  <span class="sr-only">{label}</span>
+  <span aria-hidden="true"><span class="text-accent">$</span> {command}</span>
+</h2>
