@@ -1,0 +1,62 @@
+---
+title: Engram
+summary: A study app that turns textbooks, slides and notes into spaced-repetition cards that each cite the exact page they came from, and answers questions from the material when you get stuck.
+stack: [Next.js, FastAPI, PostgreSQL, pgvector, Supabase, Docling, Anthropic API]
+repo: https://github.com/RazerBlade6/Engram
+live: https://engramstudy.app
+status: phase 1 live (invite-only) · UI/UX pass in progress
+featured: true
+order: 3
+---
+
+import Demo from '../../components/Demo.astro';
+
+<Demo kind="gif" caption="mark a chapter covered → cards → review with the source page beside each card" />
+
+## The problem
+
+"Chat with your textbook" is the obvious AI study tool, and it's the wrong one. Rereading and asking questions feel productive; active recall with spaced repetition is what actually makes material stick. But nobody wants to hand-write a few hundred flashcards per course, and generated cards are only useful if you can trust them. A card that teaches something wrong is worse than no card, because you memorise it.
+
+Engram started as a single-afternoon chat-with-a-PDF prototype, and was rebuilt from scratch around that idea. Students bring their course materials, and Engram generates cards that link back to the passage they came from, schedules them with [FSRS](https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Algorithm), and keeps chat as a fallback for when something doesn't make sense.
+
+## Architecture
+
+```text
+ Next.js PWA · Vercel
+          │
+          ├──► Supabase Auth (invite-only)
+          ▼
+   FastAPI · Cloud Run ──────────────► LLM provider layer
+          │                              Claude + Citations
+          ▼                                      ▲
+┌─ Supabase ─────────────────────┐               │
+│ Postgres: pgvector + full-text │   wakes on    │
+│ job queue · row-level security ├── new job ──► worker · Modal
+│ private Storage buckets        │               │
+└────────────────────────────────┘               ▼
+                  Docling ──► figure captions ──► section-aware chunks
+                  (layout)    (vision model)     (page + bounding box)
+```
+
+Ingesting a textbook takes minutes, so it runs on a worker that's woken by a database trigger when a job lands in the queue. Docling recovers the layout (columns, sidebars, tables, figures), a vision model captions each figure, and the text is chunked along the book's own section structure, with every chunk keeping its page number and bounding box. Ticking a chapter as "covered in class" generates its cards; chat retrieves passages with hybrid vector and keyword search and answers through Claude's native Citations.
+
+## Key decisions
+
+**Cards first, chat second.** The home screen is "Review 23 cards · ~8 min", and the chat is a side panel. Cards are strictly grounded: each one quotes its source verbatim, and a card whose quote can't be found in the chapter is dropped. That check happens in code, not by trusting the prompt. Chat may fall back to general knowledge, but the answer is then labelled *not from your course materials*.
+
+**Generate on "mark covered", not on upload.** Cards are made one chapter at a time, when a student says the class has reached it. Inference cost scales with actual use, the deck follows the syllabus, and the student gets one obvious action instead of a 400-card deck on day one.
+
+**Own the retrieval pipeline.** No LlamaIndex. Section-aware chunks, in-process ONNX embeddings and hybrid search fused by rank are all in-house, so every stage can be tuned and measured. Keyword search catches the names and terms that embeddings blur together.
+
+**One database, one enforcement point.** Postgres holds the relational data, the vectors, the full-text index and the job queue. The API runs each request as the signed-in user, so row-level security, tested in CI, is the only thing guarding data access. There's no second permission layer that could drift out of sync with it.
+
+**Test with users before writing code.** A clickable prototype went in front of a target user before any app code existed, and a moderated session closed the first build. Those sessions produced a calendar for exams and deadlines, separate upload and link controls, written-out dates, and no reminders at all. The tester turned them down firmly, so there are no streaks, badges or notifications either.
+
+**Scale to zero.** The API on Cloud Run and the worker on Modal both sit idle almost all the time, which keeps the running cost at roughly $10–30 a month for a small group of users.
+
+## What I'd do differently
+
+{/* DRAFT — Vedant to review: inferred from docs/ROADMAP.md */}
+
+- **Build the evals before the generator.** Cards record the model and prompt version that made them, so later evals can compare runs, but the card-quality and retrieval suites are still planned work. As with SQLSense, I'd now start with the eval suite.
+- **Assume the worker will die.** Modal preempted a worker halfway through an ingestion, and a one-hour stale lock left the upload stuck as "processing". Jobs now renew their lock every minute. I'd design for preemption from the first version instead of finding out in production.

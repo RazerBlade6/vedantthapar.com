@@ -111,9 +111,9 @@ test.describe('vim keys', () => {
   test('/ searches and focuses the match', async ({ page }) => {
     await page.keyboard.press('/');
     await expect(page.locator('[data-mode]')).toHaveText('SEARCH');
-    await page.locator('[data-input]').fill('R-Lox');
+    await page.locator('[data-input]').fill('Engram');
     await page.keyboard.press('Enter');
-    expect(await page.evaluate(() => document.activeElement?.textContent)).toContain('R-Lox');
+    expect(await page.evaluate(() => document.activeElement?.textContent)).toContain('Engram');
   });
 
   test('backspace on an empty prompt returns to normal mode', async ({ page }) => {
@@ -196,11 +196,11 @@ test.describe('full-buffer mode', () => {
   });
 
   test('open leaves the buffer and goes to the page; the buffer survives navigation', async ({ page }) => {
-    await bufRun(page, 'open r-lox');
-    await expect(page).toHaveURL(/\/projects\/r-lox$/);
+    await bufRun(page, 'open engram');
+    await expect(page).toHaveURL(/\/projects\/engram$/);
     await expect(buf(page)).toBeHidden();
     await command(page, 'term');
-    await expect(bufOut(page)).toContainText('open r-lox');
+    await expect(bufOut(page)).toContainText('open engram');
   });
 
   test('exit leaves', async ({ page }) => {
@@ -223,8 +223,8 @@ test.describe('M4 polish', () => {
   });
 
   test('project pages point at their own preview image', async ({ page }) => {
-    await page.goto('/projects/r-lox');
-    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://vedantthapar.com/og/projects/r-lox.png');
+    await page.goto('/projects/engram');
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://vedantthapar.com/og/projects/engram.png');
   });
 
   test('cat about.txt in the buffer shows the ASCII portrait for the current scheme only', async ({ page }) => {
@@ -336,8 +336,8 @@ test.describe('external links', () => {
   });
 
   test('links inside write-ups do too', async ({ page }) => {
-    await page.goto('/projects/r-lox');
-    await expect(page.locator('article a[href="https://craftinginterpreters.com"]')).toHaveAttribute('target', '_blank');
+    await page.goto('/projects/engram');
+    await expect(page.locator('article a[href="https://github.com/open-spaced-repetition/fsrs4anki/wiki/The-Algorithm"]')).toHaveAttribute('target', '_blank');
   });
 
   test('links printed by the terminal do too', async ({ page }) => {
